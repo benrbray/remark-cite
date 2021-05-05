@@ -122,7 +122,7 @@ const pandocExceptCases : (TestCaseSimple & { pandoc: string})[] = [
 
 ////////////////////////////////////////////////////////////
 
-describe('micromark-extension-wiki-link', () => {
+describe('micromark-extension-cite', () => {
 
 	context("matches pandoc html5 output", () => {
 
@@ -155,21 +155,5 @@ describe('micromark-extension-wiki-link', () => {
 			});
 		}
 	});
-
-	context("correctly handles well-formed citations", () => {
-		
-		// -------------------------------------------------
-
-		it("recognizes a citation with no suffix/prefix", () => {
-			let serialized = micromark('[@citation1990; also @wadler1989]', {
-				extensions: [citeExtension({})],
-				htmlExtensions: [html()]
-			});
-
-			assert.strictEqual(serialized, '<p><span class="citation" data-cites="citation1990 wadler1989">[@citation1990; also @wadler1989]</span></p>');
-		});
-
-		// -------------------------------------------------
-
-	});
+	
 })
