@@ -1,0 +1,9 @@
+{
+	"private" : true,
+	"scripts": {
+		"build:micromark-extension-cite": "cd micromark-extension-cite && npm run build",
+		"build:remark-cite": "cd remark-cite && npm run build",
+		"build:mdast-util-cite": "cd mdast-util-cite && npm run build",
+		"build" : "npm run build:micromark-extension-cite; npm run build:remark-cite; npm run build:mdast-util-cite"
+	}
+}
