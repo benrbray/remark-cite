@@ -1,11 +1,15 @@
 // micromark
 import { State, Effects, Resolve, Tokenizer, Event, Token } from "micromark/dist/shared-types";
+import * as MM from "micromark/dist/shared-types";
 
 ////////////////////////////////////////////////////////////
 
 /**
  * As of (2021/05/05), the typings exported by `remark` do not
  * accurately reflect their usage, so we patch them here.
+ *
+ * When exporting functions, we need to be careful to cast back to
+ * the built-in types, to be compatible with the current typings for remark.
  */
 
 type SyntaxExtensionHook = { [key:number] : Construct | Construct[], 'null'?: Construct | Construct[] }
@@ -19,9 +23,9 @@ interface SyntaxExtension {
 	text           ?: SyntaxExtensionHook,
 }
 
-export type Tokenize = (this: Tokenizer, effects: Effects, ok: State, nok: State) => State;
+type Tokenize = (this: Tokenizer, effects: Effects, ok: State, nok: State) => State;
 
-export interface Construct {
+interface Construct {
 	name?: string
 	tokenize: Tokenize
 	partial?: boolean
@@ -69,7 +73,7 @@ export interface CiteOptions {
  *         }
  *     }
  */
-export function citeExtension(options: CiteOptions): SyntaxExtension {
+export const citeExtension = (function (options: CiteOptions): SyntaxExtension {
 	// handle user configuration
 	let settings = options || {};
 
@@ -84,7 +88,7 @@ export function citeExtension(options: CiteOptions): SyntaxExtension {
 			91: citeStart // left square bracket `[`
 		}
 	}
-}
+}) as (options: CiteOptions) => MM.SyntaxExtension;
 
 ////////////////////////////////////////////////////////////
 
@@ -96,30 +100,6 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 	// variables to keep track of parser state
 	var aliasCursor = 0;
 	var nonEmptyKey: boolean = false;
-
-	// TODO: remove this hack which was used for debugging
-	let eff = effects;
-	let stack: string[] = [];
-	effects = {
-		...eff,
-		enter(msg: string): Token {
-			stack.push(msg);
-			console.log(`enter :: ${msg}, stack=`, stack);
-			return eff.enter(msg);
-		},
-		exit(msg: string): Token {
-			let top = stack.pop();
-			if(top !== msg) {
-				console.error(`popped ${msg}, top was ${top}`); 
-			}
-			console.log(`exit :: ${msg}, stack=`, stack);
-			return eff.exit(msg);
-		},
-		consume(code: number) {
-			console.log(`consume :: ${String.fromCharCode(code)}`);
-			return eff.consume(code);
-		},
-	}
 
 	return start;
 
@@ -160,15 +140,9 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 			return consumeCiteItemKey;
 		};
 		
-		// if the closing bracket occurs before we've found an @ symbol,
-		// then this is not actually a citation token, so we stop
-		if (code === 93) {
-			console.log("consumePrefix :: found `]` before `@`");
-			return nok(code);
-		}
-
-		if (code === null) {
-			console.log("consumePrefix :: null character");
+		// if the closing bracket or eof occurs before we've found an 
+		// at symbol, then this is not actually a citation token, so we stop
+		if (code === 93 || code === null) {
 			return nok(code);
 		}
 
@@ -191,8 +165,6 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 			effects.exit("citeItemKey");
 
 			// this item had no suffix
-			effects.enter("citeItemSuffix");
-			effects.exit("citeItemSuffix");
 			effects.exit("citeItem");
 
 			// match right square bracket `]`, indicating end of inlineCite node
@@ -220,6 +192,7 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 
 			effects.exit("citeItemKey");
 			// continue to suffix, without consuming character
+			// (this character belongs to the suffix, so suffix is non-empty)
 			effects.enter("citeItemSuffix");
 			return consumeCiteItemSuffix(code);
 		}
@@ -276,7 +249,6 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 		effects.exit("inlineCite");
 
 		// we're all done!
-		console.log("success!");
 		return ok;
 	}
 }
