@@ -1,8 +1,7 @@
 import * as Uni from "unist";
+import { Token } from "micromark/dist/shared-types";
 
-const log = function(...msg:any[]){
-	console.log("[mdast-util-cite]", ...msg);
-}
+////////////////////////////////////////////////////////////
 
 export const fromMarkdown = {
 	enter : {
