@@ -1,22 +1,66 @@
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
+////////////////////////////////////////////////////////////
+
+/**
+ * Converts a token stream produced by the syntax extension
+ * directly to HTML, with no intermediate AST.  For example,
+ *
+ * These functions rely on some unknown global state, so
+ * if the input token stream is invalid, this function will
+ * likely produce mysterious, difficult-to-diagnose errors.
+ */
+function html() {
+
+  // ---- inlineCite ---------------------------------- //
+  function enterInlineCite() {
+    var stack = this.getData('inlineCiteStack');
+    if (!stack) this.setData('inlineCiteStack', stack = []);
+    stack.push({
+      items: []
     });
-  } else {
-    obj[key] = value;
   }
 
-  return obj;
+  function exitInlineCite(token) {
+    var inlineCite = this.getData('inlineCiteStack').pop(); // gather citation data
+
+    var classNames = "citation";
+    var citeItems = (inlineCite === null || inlineCite === void 0 ? void 0 : inlineCite.items) || [];
+    var citeKeys = citeItems.map(function (item) {
+      return item.key;
+    }).join(" ");
+    var citeText = this.sliceSerialize(token); // html output
+
+    this.tag("<span class=\"".concat(classNames, "\" data-cites=\"").concat(citeKeys, "\">"));
+    this.raw(citeText);
+    this.tag('</span>');
+  } // ---- citeItemKey --------------------------------- //
+
+
+  function exitCiteItemKey(token) {
+    var citeKey = this.sliceSerialize(token);
+    var stack = this.getData('inlineCiteStack');
+    var current = top(stack);
+    current.items.push({
+      key: citeKey
+    });
+  }
+
+  function top(stack) {
+    return stack[stack.length - 1];
+  } // -------------------------------------------------- //
+
+
+  return {
+    enter: {
+      inlineCite: enterInlineCite
+    },
+    exit: {
+      inlineCite: exitInlineCite,
+      citeItemKey: exitCiteItemKey
+    }
+  };
 }
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
+// html converts token stream directly to html
 /**
  * Adds support for [`pandoc`-style citations](https://pandoc.org/MANUAL.html#citations-in-note-styles)
  * to `micromark`.  Here are some examples of valid citations:
@@ -43,7 +87,8 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
  *         }
  *     }
  */
-function citeExtension(options) {
+
+var citeExtension = function citeExtension(options) {
 
   var citeStart = {
     tokenize: citeTokenize
@@ -55,7 +100,7 @@ function citeExtension(options) {
 
     }
   };
-} ////////////////////////////////////////////////////////////
+}; ////////////////////////////////////////////////////////////
 
 /**
  * Entry-point for the citation tokenizer.
@@ -63,31 +108,7 @@ function citeExtension(options) {
  */
 
 var citeTokenize = function citeTokenize(effects, ok, nok) {
-  var nonEmptyKey = false; // TODO: remove this hack which was used for debugging
-
-  var eff = effects;
-  var stack = [];
-  effects = _objectSpread(_objectSpread({}, eff), {}, {
-    enter: function enter(msg) {
-      stack.push(msg);
-      console.log("enter :: ".concat(msg, ", stack="), stack);
-      return eff.enter(msg);
-    },
-    exit: function exit(msg) {
-      var top = stack.pop();
-
-      if (top !== msg) {
-        console.error("popped ".concat(msg, ", top was ").concat(top));
-      }
-
-      console.log("exit :: ".concat(msg, ", stack="), stack);
-      return eff.exit(msg);
-    },
-    consume: function consume(code) {
-      console.log("consume :: ".concat(String.fromCharCode(code)));
-      return eff.consume(code);
-    }
-  });
+  var nonEmptyKey = false;
   return start;
 
   function start(code) {
@@ -108,9 +129,20 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
   function consumeCiteItem(code) {
     // we haven't found any content yet
     nonEmptyKey = false;
-    effects.enter("citeItem");
-    effects.enter("citeItemPrefix"); // start by looking for a prefix
+    effects.enter("citeItem"); // match at symbol `@`, beginning the citation key
 
+    if (code === 64) {
+      // consume at symbol, which is not considered part of the key
+      effects.enter("citeItemSymbol");
+      effects.consume(code);
+      effects.exit("citeItemSymbol"); // next, get the text of the key
+
+      effects.enter("citeItemKey");
+      return consumeCiteItemKey;
+    } // otherwise, we have a non-empty prefix
+
+
+    effects.enter("citeItemPrefix");
     return consumeCiteItemPrefix(code);
   }
 
@@ -118,21 +150,18 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
     // match at symbol `@`, indicating end of prefix
     if (code === 64) {
       // indicate end of prefix, start of data
-      effects.exit("citeItemPrefix");
-      effects.enter("citeItemKey");
-      effects.consume(code); // get the text of the key
+      effects.exit("citeItemPrefix"); // consume at symbol, which is not considered part of the key
 
+      effects.enter("citeItemSymbol");
+      effects.consume(code);
+      effects.exit("citeItemSymbol"); // next, get the text of the key
+
+      effects.enter("citeItemKey");
       return consumeCiteItemKey;
     }
-    // then this is not actually a citation token, so we stop
+    // at symbol, then this is not actually a citation token, so we stop
 
-    if (code === 93) {
-      console.log("consumePrefix :: found `]` before `@`");
-      return nok(code);
-    }
-
-    if (code === null) {
-      console.log("consumePrefix :: null character");
+    if (code === 93 || code === null) {
       return nok(code);
     } // otherwise, consume the next character of the prefix
 
@@ -155,8 +184,6 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
 
       effects.exit("citeItemKey"); // this item had no suffix
 
-      effects.enter("citeItemSuffix");
-      effects.exit("citeItemSuffix");
       effects.exit("citeItem"); // match right square bracket `]`, indicating end of inlineCite node
 
       if (code === 93) {
@@ -183,6 +210,7 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
       }
 
       effects.exit("citeItemKey"); // continue to suffix, without consuming character
+      // (this character belongs to the suffix, so suffix is non-empty)
 
       effects.enter("citeItemSuffix");
       return consumeCiteItemSuffix(code);
@@ -238,10 +266,9 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
     effects.exit("inlineCiteMarker");
     effects.exit("inlineCite"); // we're all done!
 
-    console.log("success!");
     return ok;
   }
 };
 
-export { citeExtension };
+export { citeExtension, html };
 //# sourceMappingURL=index.umd.js.map

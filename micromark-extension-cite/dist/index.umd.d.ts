@@ -1,33 +1,24 @@
-import { State, Effects, Resolve, Tokenizer } from "micromark/dist/shared-types";
+import * as MM from "micromark/dist/shared-types";
+import { Token } from "micromark/dist/shared-types";
+type CiteHtmlOptions = {};
+////////////////////////////////////////////////////////////
 /**
- * As of (2021/05/05), the typings exported by `remark` do not
- * accurately reflect their usage, so we patch them here.
+ * Converts a token stream produced by the syntax extension
+ * directly to HTML, with no intermediate AST.  For example,
+ *
+ * These functions rely on some unknown global state, so
+ * if the input token stream is invalid, this function will
+ * likely produce mysterious, difficult-to-diagnose errors.
  */
-type SyntaxExtensionHook = {
-    [key: number]: Construct | Construct[];
-    'null'?: Construct | Construct[];
+declare function html(this: any, opts?: CiteHtmlOptions): {
+    enter: {
+        inlineCite: (this: any) => void;
+    };
+    exit: {
+        inlineCite: (this: any, token: Token) => void;
+        citeItemKey: (this: any, token: Token) => void;
+    };
 };
-interface SyntaxExtension {
-    document?: SyntaxExtensionHook;
-    contentInitial?: SyntaxExtensionHook;
-    flowInitial?: SyntaxExtensionHook;
-    flow?: SyntaxExtensionHook;
-    string?: SyntaxExtensionHook;
-    text?: SyntaxExtensionHook;
-}
-type Tokenize = (this: Tokenizer, effects: Effects, ok: State, nok: State) => State;
-interface Construct {
-    name?: string;
-    tokenize: Tokenize;
-    partial?: boolean;
-    resolve?: Resolve;
-    resolveTo?: Resolve;
-    resolveAll?: Resolve;
-    concrete?: boolean;
-    interruptible?: boolean;
-    lazy?: boolean;
-    add?: "after" | "before";
-}
 interface CiteOptions {
 }
 /**
@@ -56,6 +47,6 @@ interface CiteOptions {
  *         }
  *     }
  */
-declare function citeExtension(options: CiteOptions): SyntaxExtension;
-export { Tokenize, Construct, CiteOptions, citeExtension };
+declare const citeExtension: (options: CiteOptions) => MM.SyntaxExtension;
+export { html, CiteOptions, citeExtension };
 //# sourceMappingURL=index.umd.d.ts.map

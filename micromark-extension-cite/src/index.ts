@@ -2,6 +2,9 @@
 import { State, Effects, Resolve, Tokenizer, Event, Token } from "micromark/dist/shared-types";
 import * as MM from "micromark/dist/shared-types";
 
+// html converts token stream directly to html
+export { html } from "./html"; 
+
 ////////////////////////////////////////////////////////////
 
 /**
@@ -122,9 +125,20 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 		nonEmptyKey = false;
 
 		effects.enter("citeItem");
-		effects.enter("citeItemPrefix");
 
-		// start by looking for a prefix
+		// match at symbol `@`, beginning the citation key
+		if (code === 64) { 
+			// consume at symbol, which is not considered part of the key
+			effects.enter("citeItemSymbol");
+			effects.consume(code);
+			effects.exit("citeItemSymbol");
+			// next, get the text of the key
+			effects.enter("citeItemKey");
+			return consumeCiteItemKey;
+		}
+
+		// otherwise, we have a non-empty prefix
+		effects.enter("citeItemPrefix");
 		return consumeCiteItemPrefix(code);
 	}
 
@@ -133,10 +147,12 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 		if (code === 64) { 
 			// indicate end of prefix, start of data
 			effects.exit("citeItemPrefix");
-			effects.enter("citeItemKey");
+			// consume at symbol, which is not considered part of the key
+			effects.enter("citeItemSymbol");
 			effects.consume(code);
-
-			// get the text of the key
+			effects.exit("citeItemSymbol");
+			// next, get the text of the key
+			effects.enter("citeItemKey");
 			return consumeCiteItemKey;
 		};
 		
