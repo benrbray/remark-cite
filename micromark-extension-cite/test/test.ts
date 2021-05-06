@@ -78,14 +78,23 @@ const pandocMatchCases: TestCaseSimple[] = [
 	{
 		markdown: "[author:1990]",
 		html: '<p>[author:1990]</p>'
-	},
-	{
+	},{
+		markdown: "[@ author:1990]",
+		html: '<p>[@ author:1990]</p>'
+	},{
 		markdown: "[@ author:1990]",
 		html: '<p>[@ author:1990]</p>'
 	},
+	// make sure we don't treat emails as citations
 	{
-		markdown: "[@ author:1990]",
-		html: '<p>[@ author:1990]</p>'
+		markdown: "contact [user@domain.com] for more information",
+		html: '<p>contact [user@domain.com] for more information</p>'
+	},{
+		markdown: "contact user@domain.com for more information",
+		html: '<p>contact user@domain.com for more information</p>'
+	},{
+		markdown: "contact [user @domain.com] for more information",
+		html: '<p>contact <span class="citation" data-cites="domain.com">[user @domain.com]</span> for more information</p>'
 	}
 ];
 
@@ -98,10 +107,6 @@ const pandocExceptCases : (TestCaseSimple & { pandoc: string})[] = [
 	// for these cases, we expect to diverge from pandoc
 	// due to implementation details of the tokenizer
 	{
-		markdown: "[bad@author:1990]",
-		html: '<p><span class="citation" data-cites="author:1990">[bad@author:1990]</span></p>',
-		pandoc: '<p>[bad@author:1990]</p>'
-	},{
 		markdown: "[@aut\nhor:1990]",
 		html: '<p>[@aut\nhor:1990]</p>',
 		pandoc: '<p><span class="citation" data-cites="aut">[@aut hor:1990]</span></p>'
@@ -112,8 +117,7 @@ const pandocExceptCases : (TestCaseSimple & { pandoc: string})[] = [
 		markdown: "[@author:1990;]",
 		html: '<p>[@author:1990;]</p>',
 		pandoc: '<p>[<span class="citation" data-cites="author:1990">@author:1990</span>;]</p>'
-	},
-	{
+	},{
 		markdown: "[@author:1990;bad]",
 		html: '<p>[@author:1990;bad]</p>',
 		pandoc: '<p>[<span class="citation" data-cites="author:1990">@author:1990</span>;bad]</p>'

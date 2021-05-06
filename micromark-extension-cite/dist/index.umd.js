@@ -108,7 +108,16 @@ var citeExtension = function citeExtension(options) {
  */
 
 var citeTokenize = function citeTokenize(effects, ok, nok) {
-  var nonEmptyKey = false;
+  // variables to keep track of parser state
+  var parseState = {
+    /** helps detect empty citation keys */
+    nonEmptyKey: false,
+
+    /** note that this variable is only updated when we are looking
+      * for a prefix->key transition, when need to know whether the
+      * most recently consumed character was a space.               */
+    lastWasSpace: false
+  };
   return start;
 
   function start(code) {
@@ -128,7 +137,7 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
 
   function consumeCiteItem(code) {
     // we haven't found any content yet
-    nonEmptyKey = false;
+    parseState.nonEmptyKey = false;
     effects.enter("citeItem"); // match at symbol `@`, beginning the citation key
 
     if (code === 64) {
@@ -142,6 +151,7 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
     } // otherwise, we have a non-empty prefix
 
 
+    parseState.lastWasSpace = false;
     effects.enter("citeItemPrefix");
     return consumeCiteItemPrefix(code);
   }
@@ -149,7 +159,12 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
   function consumeCiteItemPrefix(code) {
     // match at symbol `@`, indicating end of prefix
     if (code === 64) {
-      // indicate end of prefix, start of data
+      // the prefix end with a space character
+      if (!parseState.lastWasSpace) {
+        return nok(code);
+      } // indicate end of prefix, start of data
+
+
       effects.exit("citeItemPrefix"); // consume at symbol, which is not considered part of the key
 
       effects.enter("citeItemSymbol");
@@ -166,6 +181,7 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
     } // otherwise, consume the next character of the prefix
 
 
+    parseState.lastWasSpace = code === 32;
     effects.consume(code);
     return consumeCiteItemPrefix;
   }
@@ -178,7 +194,7 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
     // match right square bracket `]` or item sep `;` to handle empty keys
     if (code === 93 || code == 59) {
       // handle empty key like `[prefix @]`
-      if (!nonEmptyKey) {
+      if (!parseState.nonEmptyKey) {
         return nok(code);
       }
 
@@ -205,7 +221,7 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
 
     if (code === 32 || code === 44) {
       // handle empty key like `[prefix @, suffix]`
-      if (!nonEmptyKey) {
+      if (!parseState.nonEmptyKey) {
         return nok(code);
       }
 
@@ -221,7 +237,7 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
       return nok(code);
     }
 
-    nonEmptyKey = true; // otherwise, continue consuming characters
+    parseState.nonEmptyKey = true; // otherwise, continue consuming characters
 
     effects.consume(code);
     return consumeCiteItemKey;

@@ -47,7 +47,7 @@ interface Construct {
 ////////////////////////////////////////////////////////////
 
 export interface CiteOptions {
-	// TODO: Plugin Configuration
+	
 }
 
 /**
@@ -101,8 +101,15 @@ export const citeExtension = (function (options: CiteOptions): SyntaxExtension {
  */
 const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: State, nok: State): State {
 	// variables to keep track of parser state
-	var aliasCursor = 0;
-	var nonEmptyKey: boolean = false;
+
+	let parseState = {
+		/** helps detect empty citation keys */
+		nonEmptyKey: false,
+		/** note that this variable is only updated when we are looking
+		  * for a prefix->key transition, when need to know whether the
+	      * most recently consumed character was a space.               */
+		lastWasSpace: false
+	}
 
 	return start;
 
@@ -122,7 +129,7 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 
 	function consumeCiteItem(code: number): State | void {
 		// we haven't found any content yet
-		nonEmptyKey = false;
+		parseState.nonEmptyKey = false;
 
 		effects.enter("citeItem");
 
@@ -138,13 +145,17 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 		}
 
 		// otherwise, we have a non-empty prefix
+		parseState.lastWasSpace = false;
 		effects.enter("citeItemPrefix");
 		return consumeCiteItemPrefix(code);
 	}
 
-	function consumeCiteItemPrefix(code: number): State | void {
+	function consumeCiteItemPrefix(this: any, code: number): State | void {
 		// match at symbol `@`, indicating end of prefix
 		if (code === 64) { 
+			// the prefix end with a space character
+			if(!parseState.lastWasSpace) { return nok(code); }
+
 			// indicate end of prefix, start of data
 			effects.exit("citeItemPrefix");
 			// consume at symbol, which is not considered part of the key
@@ -155,7 +166,7 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 			effects.enter("citeItemKey");
 			return consumeCiteItemKey;
 		};
-		
+
 		// if the closing bracket or eof occurs before we've found an 
 		// at symbol, then this is not actually a citation token, so we stop
 		if (code === 93 || code === null) {
@@ -163,6 +174,7 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 		}
 
 		// otherwise, consume the next character of the prefix
+		parseState.lastWasSpace = (code === 32);
 		effects.consume(code);
 		return consumeCiteItemPrefix;
 	}
@@ -176,7 +188,7 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 		// match right square bracket `]` or item sep `;` to handle empty keys
 		if (code === 93 || code == 59) {
 			// handle empty key like `[prefix @]`
-			if(!nonEmptyKey) { return nok(code); }
+			if(!parseState.nonEmptyKey) { return nok(code); }
 
 			effects.exit("citeItemKey");
 
@@ -204,7 +216,7 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 		// match space or comma, indicating start of suffix
 		if (code === 32 || code === 44) {
 			// handle empty key like `[prefix @, suffix]`
-			if(!nonEmptyKey) { return nok(code); }
+			if(!parseState.nonEmptyKey) { return nok(code); }
 
 			effects.exit("citeItemKey");
 			// continue to suffix, without consuming character
@@ -218,7 +230,7 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 			return nok(code);
 		}
 
-		nonEmptyKey = true;
+		parseState.nonEmptyKey = true;
 		
 		// otherwise, continue consuming characters
 		effects.consume(code);
