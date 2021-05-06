@@ -1,20 +1,14 @@
-console.log("hello, test!");
-
 // // testing
 import * as assert from 'assert';
-import { isEqual } from "lodash";
 
 // mdast / unist
 import * as Uni from "unist";
-import * as Md from "mdast";
-import { Options } from "mdast-util-from-markdown";
 import fromMarkdown from 'mdast-util-from-markdown';
 
 ////////////////////////////////////////////////////////////
 
 // project imports
 import { citeExtension } from '@benrbray/micromark-extension-cite'
-import { SyntaxExtension } from "micromark/lib/shared-types";
 import { CiteItem, InlineCiteNode } from "..";
 import * as mdastCiteExt from "..";
 
