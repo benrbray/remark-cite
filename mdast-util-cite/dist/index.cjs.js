@@ -2,6 +2,7 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+////////////////////////////////////////////////////////////
 var fromMarkdown = {
   enter: {
     inlineCite: enterInlineCite,
@@ -14,11 +15,30 @@ var fromMarkdown = {
     citeItemKey: exitCiteItemKey,
     citeItemSuffix: exitCiteItemSuffix
   }
-};
+}; ////////////////////////////////////////////////////////////
 
 function top(stack) {
   return stack[stack.length - 1];
 }
+/**
+ * [see @wadler1990; also @hughes1989, pp. 4]
+ *
+ * inlineCite
+ *   inlineCiteMarker [
+ *   citeItem
+ *     citeItemPrefix "see "
+ *     citeItemSymbol "@"
+ *     citeItemKey "wadler1990"
+ *     citeItemSuffix ""
+ *   citeItem
+ *     citeItemPrefix " also "
+ *     citeItemSymbol "@"
+ *     citeItemKey "hughes1989"
+ *     citeItemSuffix ", pp. 4"
+ *   inlineCiteMarker ]
+ */
+// -- inlineCite -------------------------------------------
+
 
 function enterInlineCite(token) {
   this.enter({
