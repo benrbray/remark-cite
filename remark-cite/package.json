@@ -3,6 +3,11 @@
 	"version": "1.0.0",
 	"license": "MIT",
 	"description": "A `remark` plugin for pandoc-style citations.",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/benrbray/remark-cite.git",
+		"directory": "remark-cite"
+	},
 	"keywords": [
 		"markdown",
 		"pandoc",
