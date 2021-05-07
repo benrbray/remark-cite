@@ -21,8 +21,8 @@ function citePlugin(options) {
 
   remarkV13Warning(this);
   add('micromarkExtensions', micromarkExtensionCite.citeExtension(options));
-  add('fromMarkdownExtensions', mdastUtilCite.fromMarkdown); // TODO: implement `toMarkdown`
-  //add('toMarkdownExtensions', toMarkdown)
+  add('fromMarkdownExtensions', mdastUtilCite.citeFromMarkdown);
+  add('toMarkdownExtensions', mdastUtilCite.citeToMarkdown);
 
   function add(field, value) {
     if (data[field]) data[field].push(value);else data[field] = [value];

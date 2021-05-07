@@ -41,7 +41,11 @@ const esm = {
 			sourcemap: true
 		}
 	],
-	plugins: [ts({transpiler: "babel"}), commonjs(), babelPlugin],
+	plugins: [
+		ts({transpiler: "babel"}),
+		commonjs(),
+		babelPlugin
+	],
 }
 
 // cjs/es-only configuration
@@ -59,7 +63,11 @@ const cjs_es = {
 			sourcemap: true,
 		}
 	],
-	plugins: [ts({transpiler: "babel"}), babelPlugin]
+	plugins: [
+		ts({transpiler: "babel"}),
+		commonjs(),
+		babelPlugin
+	]
 }
 
 export default [esm, cjs_es];

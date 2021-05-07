@@ -4,12 +4,13 @@ import * as assert from 'assert';
 // mdast / unist
 import * as Uni from "unist";
 import fromMarkdown from 'mdast-util-from-markdown';
+import toMarkdown from 'mdast-util-to-markdown';
 
 ////////////////////////////////////////////////////////////
 
 // project imports
 import { citeExtension, CiteOptions } from '@benrbray/micromark-extension-cite'
-import { CiteItem, InlineCiteNode } from "..";
+import { CiteItem, CiteToMarkdownOptions, InlineCiteNode } from "..";
 import * as mdastCiteExt from "..";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,23 +85,31 @@ export function visitNodeType<S extends string, N extends Uni.Node & { type: S }
 
 ////////////////////////////////////////////////////////////
 
-interface TestCase {
+interface TestCase<Opts> {
 	description?: string;
-	options?: Partial<CiteOptions>;
+	options?: Partial<Opts>;
+}
+
+interface TestFromMd extends TestCase<CiteOptions> {
 	markdown: string;                      // markdown input
 	expectData: InlineCiteNode["data"][]; // one per expected citation in the input
 }
 
-interface TestSuite {
+interface TestToMd extends TestCase<CiteToMarkdownOptions> {
+	ast: InlineCiteNode; // citation node
+	expected: string;    // expected markdown output
+}
+
+interface TestSuite<T extends TestCase<any>, Opts = T["options"]> {
 	/** Default options for the entire test suite.  Can be overridden by individual cases. */
-	options?: Partial<CiteOptions>,
-	cases: TestCase[],
+	options?: Opts
+	cases: T[],
 }
 
 ////////////////////////////////////////////////////////////
 
 /** test cases with a single citation node. */
-const pandocSingleTestCases:TestCase[] = [
+const pandocSingleTestCases:TestFromMd[] = [
 	{
 		markdown: '[@wadler1989]',
 		expectData: [
@@ -141,14 +150,14 @@ const pandocSingleTestCases:TestCase[] = [
 	},
 ]
 
-const pandocSingleTestSuite: TestSuite = {
+const pandocSingleTestSuite: TestSuite<TestFromMd> = {
 	cases: pandocSingleTestCases
 }
 
 //// PANDOC MULTI //////////////////////////////////////////
 
 /** test cases with a single citation node. */
-const pandocMultiTestCases:TestCase[] = [
+const pandocMultiTestCases:TestFromMd[] = [
 	{
 		markdown: 'lorem ipsum [@wadler1989] dolor site [@hughes1990] amet',
 		expectData: [
@@ -181,18 +190,14 @@ const pandocMultiTestCases:TestCase[] = [
 	}
 ]
 
-const pandocMultiTestSuite: TestSuite = {
+const pandocMultiTestSuite: TestSuite<TestFromMd> = {
 	cases: pandocMultiTestCases
 }
 
-//// ALTERNATIVE SYNTAX ////////////////////////////////////
-
-
-
-////////////////////////////////////////////////////////////
+//// ALT SYNTAX: SINGLE CITATION ///////////////////////////
 
 /** test cases with a single citation node. */
-const altSingleTestCases:TestCase[] = [
+const altSingleTestCases:TestFromMd[] = [
 	{
 		markdown: '@[wadler1989]',
 		expectData: [
@@ -235,15 +240,15 @@ const altSingleTestCases:TestCase[] = [
 	},
 ]
 
-const altSingleTestSuite: TestSuite = {
+const altSingleTestSuite: TestSuite<TestFromMd> = {
 	cases: altSingleTestCases,
 	options: { enableAltSyntax: true }
 }
 
-//// PANDOC MULTI //////////////////////////////////////////
+//// ALT SYNTAX: MULTIPLE CITATIONS ////////////////////////
 
 /** test cases with a single citation node. */
-const altMultiTestCases:TestCase[] = [
+const altMultiTestCases:TestFromMd[] = [
 	{
 		markdown: 'lorem ipsum @[wadler1989] dolor site @[hughes1990] amet',
 		expectData: [
@@ -293,14 +298,95 @@ const altMultiTestCases:TestCase[] = [
 	}
 ]
 
-const altMultiTestSuite: TestSuite = {
+const altMultiTestSuite: TestSuite<TestFromMd> = {
 	cases: altMultiTestCases,
 	options: { enableAltSyntax: true }
 }
 
+//// TOMARKDOWN ////////////////////////////////////////////
+
+const toMarkdownTestCases: TestToMd[] = [
+	// option: useNodeValue
+	{
+		description: "option: useNodeValue=true",
+		options: { useNodeValue: true },
+		expected: "garbage in, garbage out",
+		ast: {
+			type: "cite",
+			data: {
+				citeItems: [ { key: "wadler1989" } ]
+			},
+			value: "garbage in, garbage out"
+		}
+	},{
+		description: "option: useNodeValue=false",
+		options: { useNodeValue: false },
+		expected: "[@wadler1989]",
+		ast: {
+			type: "cite",
+			data: {
+				citeItems: [ { key: "wadler1989" } ]
+			},
+			value: "garbage in, garbage out"
+		}
+	},
+	// option: standardizeAltSyntax
+	{
+		description: "option: useNodeValue",
+		options: { standardizeAltSyntax: true },
+		expected: "[@wadler1989, p.4; and also @hughes1990; plus @peyton-jones2001]",
+		ast: {
+			type: "cite",
+			data: {
+				altSyntax: true,
+				citeItems: [
+					{
+						"key": "wadler1989",
+						"suffix": ", p.4"
+					},{
+						"prefix": " and also ",
+						"key": "hughes1990"
+					},{
+						"prefix": " plus ",
+						"key": "peyton-jones2001"
+					}
+            	]
+			},
+			value: "ignore"
+		}
+	},{
+		description: "option: useNodeValue",
+		options: { standardizeAltSyntax: false },
+		expected: "@[wadler1989, p.4; and also @hughes1990; plus @peyton-jones2001]",
+		ast: {
+			type: "cite",
+			data: {
+				altSyntax: true,
+				citeItems: [
+					{
+						"key": "wadler1989",
+						"suffix": ", p.4"
+					},{
+						"prefix": " and also ",
+						"key": "hughes1990"
+					},{
+						"prefix": " plus ",
+						"key": "peyton-jones2001"
+					}
+            	]
+			},
+			value: "ignore"
+		}
+	}
+];
+
+const toMarkdownTestSuite: TestSuite<TestToMd> = {
+	cases: toMarkdownTestCases
+}
+
 ////////////////////////////////////////////////////////////
 
-function runTestSuite(contextMsg: string, descPrefix:string, testSuite: TestSuite): void {
+function runTestSuite_fromMarkdown(contextMsg: string, descPrefix:string, testSuite: TestSuite<TestFromMd>): void {
 	context(contextMsg, () => {
 
 		let idx = 0;
@@ -314,7 +400,7 @@ function runTestSuite(contextMsg: string, descPrefix:string, testSuite: TestSuit
 				const ast = fromMarkdown(testCase.markdown, {
 					extensions: [citeExtension(options)],
 					mdastExtensions: [
-						mdastCiteExt.fromMarkdown
+						mdastCiteExt.citeFromMarkdown
 					]
 				});
 
@@ -337,12 +423,44 @@ function runTestSuite(contextMsg: string, descPrefix:string, testSuite: TestSuit
 
 ////////////////////////////////////////////////////////////
 
-describe('mdast-util-cite', () => {
+function runTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuite: TestSuite<TestToMd>): void {
+	context(contextMsg, () => {
 
-	runTestSuite("fromMarkdown :: pandoc syntax / single citation node", "pandoc-single", pandocSingleTestSuite);
-	runTestSuite("fromMarkdown :: pandoc syntax multiple citation nodes", "pandoc-multi", pandocMultiTestSuite);
+		let idx = 0;
+		for(let testCase of testSuite.cases) {
+			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}]` + (testCase.description || "");
+			it(desc, () => {
+				// merge suite options with case options
+				const options = Object.assign({}, testSuite.options, testCase.options);
 
-	runTestSuite("fromMarkdown :: alt syntax / single citation node", "alt-single", altSingleTestSuite);
-	runTestSuite("fromMarkdown :: alt syntax multiple citation nodes", "alt-multi", altMultiTestSuite);
+				// markdown -> ast
+				const serialized = toMarkdown(testCase.ast, {
+					extensions: [mdastCiteExt.citeToMarkdown(options)]
+				});
+
+				// check for match
+				assert.strictEqual(serialized.trim(), testCase.expected);
+			});
+		}
+	});
+}
+
+////////////////////////////////////////////////////////////
+
+// from markdown
+describe('mdast-util-cite (fromMarkdown)', () => {
+
+	runTestSuite_fromMarkdown("pandoc syntax / single citation node", "pandoc-single", pandocSingleTestSuite);
+	runTestSuite_fromMarkdown("pandoc syntax multiple citation nodes", "pandoc-multi", pandocMultiTestSuite);
+
+	runTestSuite_fromMarkdown("alt syntax / single citation node", "alt-single", altSingleTestSuite);
+	runTestSuite_fromMarkdown("alt syntax multiple citation nodes", "alt-multi", altMultiTestSuite);
+
+});
+
+// to markdown
+describe('mdast-util-cite (toMarkdown)', () => {
+
+	runTestSuite_toMarkdown("to markdown", "to-md", toMarkdownTestSuite);
 
 });

@@ -1,10 +1,7 @@
-// /**
-//  * As of (2021-05-05) the types for this module are very incompatible with
-//  * TypeScript, and cause mysterious errors at compile time like.
-//  */
-// declare module "unist-util-visit" {
-// 	import { Node, Parent } from "unist";
+declare module "mdast-util-to-markdown/lib/util/safe.js" {
+	import { Context, SafeOptions } from "mdast-util-to-markdown";
 
-// 	export type Visitor<V extends Node> = (node: V, index: number|null, parent: Parent|null) => void;
-// 	export const visit: <T extends Node>(tree: Node, test: string, visitor: Visitor<T>) => void;
-// }
+	// as of (2021-05-07) this function had no exported typings
+	function safe(context: Context, input: string, config: Partial<SafeOptions> ): string;
+	export = safe
+}
