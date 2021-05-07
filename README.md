@@ -8,13 +8,6 @@ Following [convention](https://github.com/micromark/micromark/discussions/56), t
 
 For more information, see the individual folders for each package.
 
-## Not Yet Implemented
-
-The following features have not yet been implemented, but may be in the future.  Pull requests are most welcome!
-
-* integration with rehype
-* the plugin currently does not distinguish between 
-
 ## Contributing
 
 Pull requests for bugfixes or new features / options are welcome.  Be aware that changes to the syntax extension `micromark-extension-cite` may also have an impact on the other two packages, and you will need to test all three.
