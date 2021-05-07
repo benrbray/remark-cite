@@ -10,6 +10,7 @@ var fromMarkdown = {
   },
   exit: {
     inlineCite: exitInlineCite,
+    inlineCiteMarker_alt: exitInlineCiteMarker_alt,
     citeItem: exitCiteItem,
     citeItemPrefix: exitCiteItemPrefix,
     citeItemKey: exitCiteItemKey,
@@ -53,6 +54,15 @@ function enterInlineCite(token) {
 function exitInlineCite(token) {
   var citeNode = this.exit(token);
   citeNode.value = this.sliceSerialize(token);
+} // inlineCiteMarker_alt ------------------------------------
+
+/** Only appears when alternate syntax is used. */
+
+
+function exitInlineCiteMarker_alt(token) {
+  var currentNode = top(this.stack); // @ts-ignore: create invalid citeItem, to be filled later
+
+  currentNode.data.altSyntax = true;
 } // -- citeItem ---------------------------------------------
 
 
@@ -67,7 +77,7 @@ function exitCiteItem(token) {
   var currentNode = top(this.stack);
   top(currentNode.data.citeItems);
   this.sliceSerialize(token);
-} // -- citeItem ---------------------------------------------
+} // -- citeItemKey ------------------------------------------
 
 
 function exitCiteItemKey(token) {
@@ -75,7 +85,7 @@ function exitCiteItemKey(token) {
   var currentItem = top(currentNode.data.citeItems);
   var citeKey = this.sliceSerialize(token);
   currentItem.key = citeKey;
-} // -- citeItem ---------------------------------------------
+} // -- citeItemSuffix ---------------------------------------
 
 
 function exitCiteItemSuffix(token) {
@@ -83,7 +93,7 @@ function exitCiteItemSuffix(token) {
   var currentItem = top(currentNode.data.citeItems);
   var citeSuffix = this.sliceSerialize(token);
   currentItem.suffix = citeSuffix;
-} // -- citeItem ---------------------------------------------
+} // -- citeItemPrefix ---------------------------------------
 
 
 function exitCiteItemPrefix(token) {

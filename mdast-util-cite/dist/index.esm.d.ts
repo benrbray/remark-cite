@@ -11,6 +11,7 @@ interface InlineCiteNode extends Uni.Literal {
     value: string;
     children: [];
     data: {
+        altSyntax?: true | undefined;
         citeItems: CiteItem[];
     };
 }

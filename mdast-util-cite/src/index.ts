@@ -15,6 +15,7 @@ export interface InlineCiteNode extends Uni.Literal {
 	value: string,
 	children: [],
 	data: {
+		altSyntax?: true|undefined;
 		citeItems: CiteItem[]
 	}
 }
@@ -28,6 +29,7 @@ export const fromMarkdown: MdastExtension = {
 	},
 	exit : {
 		inlineCite: exitInlineCite,
+		inlineCiteMarker_alt: exitInlineCiteMarker_alt,
 		citeItem: exitCiteItem,
 		citeItemPrefix: exitCiteItemPrefix,
 		citeItemKey: exitCiteItemKey,
@@ -76,6 +78,15 @@ function exitInlineCite(this: any, token: unknown) {
 	citeNode.value = this.sliceSerialize(token);
 }
 
+// inlineCiteMarker_alt ------------------------------------
+
+/** Only appears when alternate syntax is used. */
+function exitInlineCiteMarker_alt(this: any, token: unknown) {
+	const currentNode = top(this.stack) as InlineCiteNode;
+	// @ts-ignore: create invalid citeItem, to be filled later
+	currentNode.data.altSyntax = true;
+}
+
 // -- citeItem ---------------------------------------------
 
 function enterCiteItem(this: any, token: Token) {
@@ -91,7 +102,7 @@ function exitCiteItem(this: any, token: Token) {
 	const citeSrc = this.sliceSerialize(token);
 }
 
-// -- citeItem ---------------------------------------------
+// -- citeItemKey ------------------------------------------
 
 function exitCiteItemKey(this: any, token: Token) {
 	const currentNode = top(this.stack) as InlineCiteNode;
@@ -101,7 +112,7 @@ function exitCiteItemKey(this: any, token: Token) {
 	currentItem.key = citeKey;
 }
 
-// -- citeItem ---------------------------------------------
+// -- citeItemSuffix ---------------------------------------
 
 function exitCiteItemSuffix(this: any, token: Token) {
 	const currentNode = top(this.stack) as InlineCiteNode;
@@ -111,7 +122,7 @@ function exitCiteItemSuffix(this: any, token: Token) {
 	currentItem.suffix = citeSuffix;
 }
 
-// -- citeItem ---------------------------------------------
+// -- citeItemPrefix ---------------------------------------
 
 function exitCiteItemPrefix(this: any, token: Token) {
 	const currentNode = top(this.stack) as InlineCiteNode;

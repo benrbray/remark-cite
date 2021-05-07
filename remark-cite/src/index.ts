@@ -24,7 +24,7 @@ function remarkV13Warning(context: any): boolean {
 	return warningIssued;
 }
 
-export function citePlugin(this: any, options: CiteOptions) {
+export function citePlugin(this: any, options: Partial<CiteOptions>) {
 	var data = this.data()
 
 	// warn for earlier versions

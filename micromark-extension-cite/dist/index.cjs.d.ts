@@ -20,6 +20,19 @@ declare function html(this: any, opts?: CiteHtmlOptions): {
     };
 };
 interface CiteOptions {
+    /**
+     * Enable the alternative syntax, like `@[wadler1989]`.
+     * The first citation item can have a prefix, but not a suffix.
+     * There are no restrictions on subsequent items.
+     * @default `false`
+     */
+    enableAltSyntax: boolean;
+    /**
+     * Enable the pandoc-style syntax, like `[@wadler1989]`.
+     * Each individual citation can have a prefix and suffix.
+     * @default `true`
+     */
+    enablePandocSyntax: boolean;
 }
 /**
  * Adds support for [`pandoc`-style citations](https://pandoc.org/MANUAL.html#citations-in-note-styles)
@@ -47,6 +60,6 @@ interface CiteOptions {
  *         }
  *     }
  */
-declare const citeExtension: (options: CiteOptions) => MM.SyntaxExtension;
+declare const citeExtension: (options: Partial<CiteOptions>) => MM.SyntaxExtension;
 export { html, CiteOptions, citeExtension };
 //# sourceMappingURL=index.cjs.d.ts.map

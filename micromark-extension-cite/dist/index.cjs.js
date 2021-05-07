@@ -93,16 +93,30 @@ function html() {
  */
 
 var citeExtension = function citeExtension(options) {
+  // handle user configuration
+  var settings = Object.assign({
+    enableAltSyntax: false,
+    enablePandocSyntax: true
+  }, options); // starting point for both pandoc-style and alternative syntax
 
   var citeStart = {
     tokenize: citeTokenize
-  }; // assemble extension
+  }; // hooks
+
+  var text = {}; // activate pandoc-style syntax
+
+  if (settings.enablePandocSyntax) {
+    text[91] = citeStart;
+  } // activate alternative syntax
+
+
+  if (settings.enableAltSyntax) {
+    text[64] = citeStart;
+  } // assemble extension
+
 
   return {
-    text: {
-      91: citeStart // left square bracket `[`
-
-    }
+    text: text
   };
 }; ////////////////////////////////////////////////////////////
 
@@ -126,17 +140,44 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
 
   function start(code) {
     // match left square bracket `[`
-    // (technically not necessary, if we trust the hook that brought us here)
-    if (code !== 91) {
-      return nok(code);
-    }
+    if (code === 91) {
+      effects.enter("inlineCite");
+      effects.enter("inlineCiteMarker");
+      effects.consume(code);
+      effects.exit("inlineCiteMarker"); // start looking for a citeItem
 
-    effects.enter("inlineCite");
-    effects.enter("inlineCiteMarker");
-    effects.consume(code);
-    effects.exit("inlineCiteMarker"); // start looking for a citeItem
+      return consumeCiteItem;
+    } // match at symbol `@`
+    else if (code === 64) {
+        effects.enter("inlineCite");
+        effects.enter("inlineCiteMarker_alt");
+        effects.consume(code); // start looking for a citeItem
 
-    return consumeCiteItem;
+        return alt_consumeLeftBracket;
+      } // invalid starting character
+      else {
+          return nok(code);
+        }
+  }
+  /*
+   * (Alternative Syntax) See `enableAltSyntax` option.
+   */
+
+
+  function alt_consumeLeftBracket(code) {
+    // match left square bracket `[`
+    if (code === 91) {
+      // consume bracket
+      effects.consume(code);
+      effects.exit("inlineCiteMarker_alt"); // skip prefix, start looking for cite key
+
+      effects.enter("citeItem");
+      effects.enter("citeItemKey");
+      return consumeCiteItemKey;
+    } // if we see a different character, this is not a citation
+
+
+    return nok(code);
   }
 
   function consumeCiteItem(code) {
@@ -248,7 +289,12 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
   }
 
   function consumeCiteItemSuffix(code) {
-    // match right square bracket `]`, indicating end of inlineCite node
+    // fail on eof
+    if (code === null) {
+      return nok(code);
+    } // match right square bracket `]`, indicating end of inlineCite node
+
+
     if (code === 93) {
       // we're done!  close this item and finish up
       effects.exit("citeItemSuffix");

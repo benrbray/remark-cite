@@ -47,7 +47,19 @@ interface Construct {
 ////////////////////////////////////////////////////////////
 
 export interface CiteOptions {
-	
+	/**
+	 * Enable the alternative syntax, like `@[wadler1989]`.
+	 * The first citation item can have a prefix, but not a suffix.
+	 * There are no restrictions on subsequent items.
+	 * @default `false`
+	 */
+	enableAltSyntax: boolean;
+	/**
+	 * Enable the pandoc-style syntax, like `[@wadler1989]`.
+	 * Each individual citation can have a prefix and suffix.
+	 * @default `true`
+	 */
+	enablePandocSyntax: boolean;
 }
 
 /**
@@ -76,22 +88,34 @@ export interface CiteOptions {
  *         }
  *     }
  */
-export const citeExtension = (function (options: CiteOptions): SyntaxExtension {
+export const citeExtension = (function (options?: Partial<CiteOptions>): SyntaxExtension {
 	// handle user configuration
-	let settings = options || {};
+	const settings = Object.assign({
+		enableAltSyntax:    false,
+		enablePandocSyntax: true,
+	}, options);
 
-	// matches the opening bracket of an inline citation
-	let citeStart: Construct = {
+	// starting point for both pandoc-style and alternative syntax
+	const citeStart: Construct = {
 		tokenize: citeTokenize
 	}
 
-	// assemble extension
-	return {
-		text: {
-			91: citeStart // left square bracket `[`
-		}
+	// hooks
+	const text: { [c:number]: Construct } = { };
+
+	// activate pandoc-style syntax
+	if(settings.enablePandocSyntax) {
+		text[91] = citeStart;
 	}
-}) as (options: CiteOptions) => MM.SyntaxExtension;
+
+	// activate alternative syntax
+	if(settings.enableAltSyntax) {
+		text[64] = citeStart;
+	}
+
+	// assemble extension
+	return { text };
+}) as (options: Partial<CiteOptions>) => MM.SyntaxExtension;
 
 ////////////////////////////////////////////////////////////
 
@@ -110,21 +134,51 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 	      * most recently consumed character was a space.               */
 		lastWasSpace: false
 	}
-
+	
 	return start;
 
 	function start(code: number): State | void {
 		// match left square bracket `[`
-		// (technically not necessary, if we trust the hook that brought us here)
-		if (code !== 91) { return nok(code); }
+		if (code === 91) { 
+			effects.enter("inlineCite");
+			effects.enter("inlineCiteMarker");
+			effects.consume(code);
+			effects.exit("inlineCiteMarker");
+			
+			// start looking for a citeItem
+			return consumeCiteItem;
+		}
+		// match at symbol `@`
+		else if (code === 64) {
+			effects.enter("inlineCite");
+			effects.enter("inlineCiteMarker_alt");
+			effects.consume(code);
+			
+			// start looking for a citeItem
+			return alt_consumeLeftBracket;
+		}
+		// invalid starting character
+		else { return nok(code); }
+	}
 
-		effects.enter("inlineCite");
-		effects.enter("inlineCiteMarker");
-		effects.consume(code);
-		effects.exit("inlineCiteMarker");
-		
-		// start looking for a citeItem
-		return consumeCiteItem;
+	/*
+	 * (Alternative Syntax) See `enableAltSyntax` option.
+	 */
+	function alt_consumeLeftBracket(code: number): State | void {
+		// match left square bracket `[`
+		if (code === 91) { 
+			// consume bracket
+			effects.consume(code);
+			effects.exit("inlineCiteMarker_alt");
+
+			// skip prefix, start looking for cite key
+			effects.enter("citeItem");
+			effects.enter("citeItemKey");
+			return consumeCiteItemKey;
+		}
+
+		// if we see a different character, this is not a citation
+		return nok(code);
 	}
 
 	function consumeCiteItem(code: number): State | void {
@@ -238,6 +292,9 @@ const citeTokenize: Tokenize = function(this: Tokenizer, effects: Effects, ok: S
 	}
 
 	function consumeCiteItemSuffix(code: number): State | void {
+		// fail on eof
+		if (code === null) { return nok(code); }
+
 		// match right square bracket `]`, indicating end of inlineCite node
 		if (code === 93) {
 			// we're done!  close this item and finish up
