@@ -8,12 +8,12 @@ console.log("hello, mocha!");
 import micromark from "micromark/lib";
 
 // project imports
-import { citeExtension, CiteOptions, html } from '..';
+import { citeExtension, CiteSyntaxOptions, html } from '..';
 
 ////////////////////////////////////////////////////////////
 
 interface TestCaseSimple {
-	options?: Partial<CiteOptions>,
+	options?: Partial<CiteSyntaxOptions>,
 	description?: string,
 	markdown: string,
 	html: string,
@@ -21,7 +21,7 @@ interface TestCaseSimple {
 
 interface TestSuite {
 	/** Default options for the entire test suite.  Can be overridden by individual cases. */
-	options?: Partial<CiteOptions>,
+	options?: Partial<CiteSyntaxOptions>,
 	cases: TestCaseSimple[],
 }
 
@@ -282,12 +282,16 @@ const altSyntaxCases: TestCaseSimple[] = [
 	// (suppression only appears in AST)
 	{
 		description: "author suppression",
-		markdown: "@[-author1990]",
+		markdown: "@[-author:1990]",
 		html: '<p><span class="citation" data-cites="author:1990">@[-author:1990]</span></p>',
 	},{
 		description: "author suppression",
 		markdown: "@[author:1990, sec. 3.1; and also -@author:2001 on page 77 ; but don't forget -@author:2017 chapter 5]",
 		html: '<p><span class="citation" data-cites="author:1990 author:2001 author:2017">@[author:1990, sec. 3.1; and also -@author:2001 on page 77 ; but don\'t forget -@author:2017 chapter 5]</span></p>',
+	},{
+		description: "author suppression with hyphenated name",
+		markdown: "@[peyton-jones2001]",
+		html: '<p><span class="citation" data-cites="peyton-jones2001">@[peyton-jones2001]</span></p>'
 	}
 ];
 

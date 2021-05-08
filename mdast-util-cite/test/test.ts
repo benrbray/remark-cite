@@ -9,7 +9,7 @@ import toMarkdown from 'mdast-util-to-markdown';
 ////////////////////////////////////////////////////////////
 
 // project imports
-import { citeExtension, CiteOptions } from '@benrbray/micromark-extension-cite'
+import { citeExtension, CiteSyntaxOptions } from '@benrbray/micromark-extension-cite'
 import { CiteItem, CiteToMarkdownOptions, InlineCiteNode } from "..";
 import * as mdastCiteExt from "..";
 
@@ -85,22 +85,22 @@ export function visitNodeType<S extends string, N extends Uni.Node & { type: S }
 
 ////////////////////////////////////////////////////////////
 
-interface TestCase<Opts> {
+export interface TestCase<Opts> {
 	description?: string;
 	options?: Partial<Opts>;
 }
 
-interface TestFromMd extends TestCase<CiteOptions> {
+export interface TestFromMd extends TestCase<CiteSyntaxOptions> {
 	markdown: string;                      // markdown input
 	expectData: InlineCiteNode["data"][]; // one per expected citation in the input
 }
 
-interface TestToMd extends TestCase<CiteToMarkdownOptions> {
+export interface TestToMd extends TestCase<CiteToMarkdownOptions> {
 	ast: InlineCiteNode; // citation node
 	expected: string;    // expected markdown output
 }
 
-interface TestSuite<T extends TestCase<any>, Opts = T["options"]> {
+export interface TestSuite<T extends TestCase<any>, Opts = T["options"]> {
 	/** Default options for the entire test suite.  Can be overridden by individual cases. */
 	options?: Opts
 	cases: T[],
@@ -109,7 +109,7 @@ interface TestSuite<T extends TestCase<any>, Opts = T["options"]> {
 ////////////////////////////////////////////////////////////
 
 /** test cases with a single citation node. */
-const pandocSingleTestCases:TestFromMd[] = [
+export const pandocSingleTestCases:TestFromMd[] = [
 	{
 		markdown: '[@wadler1989]',
 		expectData: [
@@ -150,14 +150,14 @@ const pandocSingleTestCases:TestFromMd[] = [
 	},
 ]
 
-const pandocSingleTestSuite: TestSuite<TestFromMd> = {
+export const pandocSingleTestSuite: TestSuite<TestFromMd> = {
 	cases: pandocSingleTestCases
 }
 
 //// PANDOC MULTI //////////////////////////////////////////
 
 /** test cases with a single citation node. */
-const pandocMultiTestCases:TestFromMd[] = [
+export const pandocMultiTestCases:TestFromMd[] = [
 	{
 		markdown: 'lorem ipsum [@wadler1989] dolor site [@hughes1990] amet',
 		expectData: [
@@ -190,14 +190,85 @@ const pandocMultiTestCases:TestFromMd[] = [
 	}
 ]
 
-const pandocMultiTestSuite: TestSuite<TestFromMd> = {
+export const pandocMultiTestSuite: TestSuite<TestFromMd> = {
 	cases: pandocMultiTestCases
+}
+
+//// PANDOC SYNTAX: SUPPRESS AUTHOR ////////////////////////
+
+/** test author suppression syntax */
+export const pandocSuppressAuthorCases:TestFromMd[] = [
+	{
+		markdown: '[-@wadler1989]',
+		expectData: [
+			{ citeItems: [{ key: "wadler1989", suppressAuthor: true }] },
+		]
+	},{
+		markdown: 'lorem ipsum [see e.g. -@wadler1989, pp.80] and [-@hughes1990]',
+		expectData: [
+			{ citeItems: [{ prefix: "see e.g. ", key: "wadler1989", suffix: ", pp.80", suppressAuthor: true }] },
+			{ citeItems: [{ key: "hughes1990", suppressAuthor: true }] },
+		]
+	},{
+		markdown: '[-cite]',
+		expectData: []
+	},{
+		markdown: 'lorem ipsum [see e.g. -@wadler1989, pp.80] and [-@hughes1990]',
+		expectData: [
+			{ citeItems: [{ prefix: "see e.g. ", key: "wadler1989", suffix: ", pp.80", suppressAuthor: true }] },
+			{ citeItems: [{ key: "hughes1990", suppressAuthor: true }] },
+		]
+	}
+]
+
+export const pandocSuppressAuthorSuite: TestSuite<TestFromMd> = {
+	cases: pandocSuppressAuthorCases
+}
+
+//// ALTERNATIVE SYNTAX: SUPPRESS AUTHOR ///////////////////
+
+export const altSuppressAuthorCases:TestFromMd[] = [
+	{
+		markdown: '@[-wadler1989]',
+		expectData: [
+			{ altSyntax: true, citeItems: [{ key: "wadler1989", suppressAuthor: true }] },
+		]
+	},{
+		description: "hyphenated name",
+		markdown: '@[peyton-jones2001]',
+		expectData: [
+			{ altSyntax: true, citeItems: [{ key: "peyton-jones2001" }] },
+		]
+	},{
+		description: "hyphenated name",
+		markdown: '@[-peyton-jones2001]',
+		expectData: [
+			{ altSyntax: true, citeItems: [{ key: "peyton-jones2001", suppressAuthor: true }] },
+		]
+	},{
+		markdown: 'lorem ipsum @[-wadler1989, pp.80; and -@hughes1990] and @[peyton-jones2001]',
+		expectData: [
+			{ altSyntax: true, citeItems: [
+				{ key: "wadler1989", suffix: ", pp.80", suppressAuthor: true },
+				{ prefix: " and ", key: "hughes1990", suppressAuthor: true }
+			] },
+			{ altSyntax: true, citeItems: [{ key: "peyton-jones2001" }] },
+		]
+	},{
+		markdown: '@[-',
+		expectData: []
+	}
+]
+
+export const altSuppressAuthorSuite: TestSuite<TestFromMd> = {
+	options: { enablePandocSyntax: false, enableAltSyntax: true },
+	cases: altSuppressAuthorCases
 }
 
 //// ALT SYNTAX: SINGLE CITATION ///////////////////////////
 
 /** test cases with a single citation node. */
-const altSingleTestCases:TestFromMd[] = [
+export const altSingleTestCases:TestFromMd[] = [
 	{
 		markdown: '@[wadler1989]',
 		expectData: [
@@ -240,7 +311,7 @@ const altSingleTestCases:TestFromMd[] = [
 	},
 ]
 
-const altSingleTestSuite: TestSuite<TestFromMd> = {
+export const altSingleTestSuite: TestSuite<TestFromMd> = {
 	cases: altSingleTestCases,
 	options: { enableAltSyntax: true }
 }
@@ -248,7 +319,7 @@ const altSingleTestSuite: TestSuite<TestFromMd> = {
 //// ALT SYNTAX: MULTIPLE CITATIONS ////////////////////////
 
 /** test cases with a single citation node. */
-const altMultiTestCases:TestFromMd[] = [
+export const altMultiTestCases:TestFromMd[] = [
 	{
 		markdown: 'lorem ipsum @[wadler1989] dolor site @[hughes1990] amet',
 		expectData: [
@@ -298,14 +369,14 @@ const altMultiTestCases:TestFromMd[] = [
 	}
 ]
 
-const altMultiTestSuite: TestSuite<TestFromMd> = {
+export const altMultiTestSuite: TestSuite<TestFromMd> = {
 	cases: altMultiTestCases,
 	options: { enableAltSyntax: true }
 }
 
 //// TOMARKDOWN ////////////////////////////////////////////
 
-const toMarkdownTestCases: TestToMd[] = [
+export const toMarkdownTestCases: TestToMd[] = [
 	// option: useNodeValue
 	{
 		description: "option: useNodeValue=true",
@@ -332,7 +403,7 @@ const toMarkdownTestCases: TestToMd[] = [
 	},
 	// option: standardizeAltSyntax
 	{
-		description: "option: useNodeValue",
+		description: "option: standardizeAltSyntax=true",
 		options: { standardizeAltSyntax: true },
 		expected: "[@wadler1989, p.4; and also @hughes1990; plus @peyton-jones2001]",
 		ast: {
@@ -355,7 +426,7 @@ const toMarkdownTestCases: TestToMd[] = [
 			value: "ignore"
 		}
 	},{
-		description: "option: useNodeValue",
+		description: "option: standardizeAltSyntax=false",
 		options: { standardizeAltSyntax: false },
 		expected: "@[wadler1989, p.4; and also @hughes1990; plus @peyton-jones2001]",
 		ast: {
@@ -377,10 +448,78 @@ const toMarkdownTestCases: TestToMd[] = [
 			},
 			value: "ignore"
 		}
+	},
+	// option: enableAuthorSuppression
+	{
+		description: "option: enableAuthorSuppression=true",
+		options: { enableAuthorSuppression: true, useNodeValue: false },
+		expected: "@[-peyton-jones2001]",
+		ast: {
+			type: "cite",
+			value: "@[-peyton-jones2001]",
+			data: {
+				"citeItems": [{
+					"suppressAuthor": true,
+					"key": "peyton-jones2001"
+				}],
+				"altSyntax": true
+			}
+		}
+	},{
+		description: "option: enableAuthorSuppression=true",
+		options: { enableAuthorSuppression: true, useNodeValue: false },
+		expected: "[-@wadler1989; also -@hughes]",
+		ast: {
+			"type": "cite",
+			"value": "[-@wadler1989; also -@hughes]",
+			"data": {
+				"citeItems": [{
+					"suppressAuthor": true,
+					"key": "wadler1989"
+				},{
+					"prefix": " also ",
+					"suppressAuthor": true,
+					"key": "hughes"
+				}]
+			}
+		}
+	},{
+		description: "option: enableAuthorSuppression=false",
+		options: { enableAuthorSuppression: false, useNodeValue: false },
+		expected: "@[peyton-jones2001]",
+		ast: {
+			type: "cite",
+			value: "@[-peyton-jones2001]",
+			data: {
+				"citeItems": [{
+					"suppressAuthor": true,
+					"key": "peyton-jones2001"
+				}],
+				"altSyntax": true
+			}
+		}
+	},{
+		description: "option: enableAuthorSuppression=false",
+		options: { enableAuthorSuppression: false, useNodeValue: false },
+		expected: "[@wadler1989; also @hughes]",
+		ast: {
+			"type": "cite",
+			"value": "[-@wadler1989; also -@hughes]",
+			"data": {
+				"citeItems": [{
+					"suppressAuthor": true,
+					"key": "wadler1989"
+				},{
+					"prefix": " also ",
+					"suppressAuthor": true,
+					"key": "hughes"
+				}]
+			}
+		}
 	}
 ];
 
-const toMarkdownTestSuite: TestSuite<TestToMd> = {
+export const toMarkdownTestSuite: TestSuite<TestToMd> = {
 	cases: toMarkdownTestCases
 }
 
@@ -391,7 +530,7 @@ function runTestSuite_fromMarkdown(contextMsg: string, descPrefix:string, testSu
 
 		let idx = 0;
 		for(let testCase of testSuite.cases) {
-			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}]` + (testCase.description || "");
+			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}] ` + (testCase.description || "");
 			it(desc, () => {
 				// merge suite options with case options
 				const options = Object.assign({}, testSuite.options, testCase.options);
@@ -428,7 +567,7 @@ function runTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuit
 
 		let idx = 0;
 		for(let testCase of testSuite.cases) {
-			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}]` + (testCase.description || "");
+			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}] ` + (testCase.description || "");
 			it(desc, () => {
 				// merge suite options with case options
 				const options = Object.assign({}, testSuite.options, testCase.options);
@@ -451,10 +590,12 @@ function runTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuit
 describe('mdast-util-cite (fromMarkdown)', () => {
 
 	runTestSuite_fromMarkdown("pandoc syntax / single citation node", "pandoc-single", pandocSingleTestSuite);
-	runTestSuite_fromMarkdown("pandoc syntax multiple citation nodes", "pandoc-multi", pandocMultiTestSuite);
+	runTestSuite_fromMarkdown("pandoc syntax / multiple citation nodes", "pandoc-multi", pandocMultiTestSuite);
+	runTestSuite_fromMarkdown("pandoc syntax / suppress author", "pandoc-suppress", pandocSuppressAuthorSuite);
 
 	runTestSuite_fromMarkdown("alt syntax / single citation node", "alt-single", altSingleTestSuite);
-	runTestSuite_fromMarkdown("alt syntax multiple citation nodes", "alt-multi", altMultiTestSuite);
+	runTestSuite_fromMarkdown("alt syntax / multiple citation nodes", "alt-multi", altMultiTestSuite);
+	runTestSuite_fromMarkdown("alt syntax / suppress author", "alt-suppress", altSuppressAuthorSuite);
 
 });
 

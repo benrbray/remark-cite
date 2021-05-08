@@ -1,1 +1,1 @@
-{"version":3,"file":"index.umd.d.ts","sourceRoot":"","sources":["../src/index.ts","../src/fromMarkdown.ts","../src/toMarkdown.ts"],"names":[],"mappings":";;;;;;;;;;;;;;;;mBAC8V,QAAS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AADvW,OAAO,qFAA8C,CAAuB"}
+{"version":3,"file":"index.umd.d.ts","sourceRoot":"","sources":["../src/index.ts","../src/fromMarkdown.ts","../src/toMarkdown.ts"],"names":[],"mappings":";;;;;;;;;;;;;;;;;mBACgY,QAAS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AADzY,OAAO,qFAA8C,CAAuB"}

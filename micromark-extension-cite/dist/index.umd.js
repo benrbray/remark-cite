@@ -71,21 +71,6 @@ function html() {
  *    [@hughes1989, sec 3.4]                      --> (Hughes 1989, sec 3.4)
  *    [see @wadler1990; and @hughes1989, pp. 4]   --> (see Wadler 1990 and Hughes 1989, pp. 4)
  *    ```
- *
- * This extension introduces a new `unist` node type.
- *
- *     interface CitationInfo {
- *         prefix?: string;
- *         key: string;
- *         suffix?: string;
- *     }
- *
- *     interface Citation <: Literal {
- *         type: "citation"
- *         data: {
- *             citeItems: CitationInfo[]
- *         }
- *     }
  */
 
 var citeExtension = function citeExtension(options) {
@@ -93,21 +78,21 @@ var citeExtension = function citeExtension(options) {
   var settings = Object.assign({
     enableAltSyntax: false,
     enablePandocSyntax: true
-  }, options); // starting point for both pandoc-style and alternative syntax
-
-  var citeStart = {
-    tokenize: citeTokenize
-  }; // hooks
+  }, options); // hooks
 
   var text = {}; // activate pandoc-style syntax
 
   if (settings.enablePandocSyntax) {
-    text[91] = citeStart;
+    text[91] = {
+      tokenize: citeTokenize(false)
+    };
   } // activate alternative syntax
 
 
   if (settings.enableAltSyntax) {
-    text[64] = citeStart;
+    text[64] = {
+      tokenize: citeTokenize(true)
+    };
   } // assemble extension
 
 
@@ -116,37 +101,92 @@ var citeExtension = function citeExtension(options) {
   };
 }; ////////////////////////////////////////////////////////////
 
+var lookaheadConstruct = {
+  partial: true,
+
+  /** If the next two characters are `-@`, run `ok`, else `nok`. */
+  tokenize: function tokenize(effects, ok, nok) {
+    return start;
+
+    function start(code) {
+      // match hyphen `-`
+      if (code !== 45) {
+        return nok(code);
+      }
+
+      effects.consume(code);
+      return lookaheadAt;
+    }
+
+    function lookaheadAt(code) {
+      // match at symbol `@`
+      if (code !== 64) {
+        return nok(code);
+      }
+
+      effects.consume(code);
+      return ok(code);
+    }
+  }
+};
 /**
  * Entry-point for the citation tokenizer.
- *
+ * @param altSyntax If `true`, look ONLY for alt syntax.  If `false`, look ONLY for pandoc syntax.
  */
 
-var citeTokenize = function citeTokenize(effects, ok, nok) {
-  // variables to keep track of parser state
-  var parseState = {
-    /** helps detect empty citation keys */
-    nonEmptyKey: false,
+var citeTokenize = function citeTokenize(altSyntax) {
+  return function (effects, ok, nok) {
+    // variables to keep track of parser state -- ideally the parsers below
+    // would all be pure/deterministic, but that quickly got out of hand
+    var parseState = {
+      /** helps detect empty citation keys */
+      nonEmptyKey: false,
 
-    /** note that this variable is only updated when we are looking
-      * for a prefix->key transition, when need to know whether the
-      * most recently consumed character was a space.               */
-    lastWasSpace: false
-  };
-  return start;
+      /** note that this variable is only updated when we are looking
+        * for a prefix->key transition, when need to know whether the
+        * most recently consumed character was a space.            */
+      lastWasSpace: false,
 
-  function start(code) {
-    // match left square bracket `[`
-    if (code === 91) {
-      effects.enter("inlineCite");
-      effects.enter("inlineCiteMarker");
-      effects.consume(code);
-      effects.exit("inlineCiteMarker"); // start looking for a citeItem
+      /** are we currently in the prefix? */
+      inPrefix: false
+    }; // typos in strings manually passed to enter() / exit() have been
+    // a source of bugs, so let TypeScript error-check for us
 
-      return consumeCiteItem;
-    } // match at symbol `@`
-    else if (code === 64) {
-        effects.enter("inlineCite");
-        effects.enter("inlineCiteMarker_alt");
+    effects = effects; // return appropriate tokenizer for syntax type
+
+    return altSyntax ? start_alt : start_pandoc; // -- pandoc syntax --------------------------------- //
+
+    function start_pandoc(code) {
+      // match left square bracket `[`
+      if (code === 91) {
+        effects.enter("inlineCite"
+        /* inlineCite */
+        );
+        effects.enter("inlineCiteMarker"
+        /* inlineCiteMarker */
+        );
+        effects.consume(code);
+        effects.exit("inlineCiteMarker"
+        /* inlineCiteMarker */
+        ); // start looking for a citeItem
+
+        return consumeCiteItem;
+      } // invalid starting character
+      else {
+          return nok(code);
+        }
+    } // -- alternative syntax ---------------------------- //
+
+
+    function start_alt(code) {
+      // match at symbol `@`
+      if (code === 64) {
+        effects.enter("inlineCite"
+        /* inlineCite */
+        );
+        effects.enter("inlineCiteMarker_alt"
+        /* inlineCiteMarker_alt */
+        );
         effects.consume(code); // start looking for a citeItem
 
         return alt_consumeLeftBracket;
@@ -154,182 +194,353 @@ var citeTokenize = function citeTokenize(effects, ok, nok) {
       else {
           return nok(code);
         }
-  }
-  /*
-   * (Alternative Syntax) See `enableAltSyntax` option.
-   */
-
-
-  function alt_consumeLeftBracket(code) {
-    // match left square bracket `[`
-    if (code === 91) {
-      // consume bracket
-      effects.consume(code);
-      effects.exit("inlineCiteMarker_alt"); // skip prefix, start looking for cite key
-
-      effects.enter("citeItem");
-      effects.enter("citeItemKey");
-      return consumeCiteItemKey;
-    } // if we see a different character, this is not a citation
-
-
-    return nok(code);
-  }
-
-  function consumeCiteItem(code) {
-    // we haven't found any content yet
-    parseState.nonEmptyKey = false;
-    effects.enter("citeItem"); // match at symbol `@`, beginning the citation key
-
-    if (code === 64) {
-      // consume at symbol, which is not considered part of the key
-      effects.enter("citeItemSymbol");
-      effects.consume(code);
-      effects.exit("citeItemSymbol"); // next, get the text of the key
-
-      effects.enter("citeItemKey");
-      return consumeCiteItemKey;
-    } // otherwise, we have a non-empty prefix
-
-
-    parseState.lastWasSpace = false;
-    effects.enter("citeItemPrefix");
-    return consumeCiteItemPrefix(code);
-  }
-
-  function consumeCiteItemPrefix(code) {
-    // match at symbol `@`, indicating end of prefix
-    if (code === 64) {
-      // the prefix end with a space character
-      if (!parseState.lastWasSpace) {
-        return nok(code);
-      } // indicate end of prefix, start of data
-
-
-      effects.exit("citeItemPrefix"); // consume at symbol, which is not considered part of the key
-
-      effects.enter("citeItemSymbol");
-      effects.consume(code);
-      effects.exit("citeItemSymbol"); // next, get the text of the key
-
-      effects.enter("citeItemKey");
-      return consumeCiteItemKey;
     }
-    // at symbol, then this is not actually a citation token, so we stop
+    /*
+     * (Alternative Syntax) See `enableAltSyntax` option.
+     */
 
-    if (code === 93 || code === null) {
+
+    function alt_consumeLeftBracket(code) {
+      // match left square bracket `[`
+      if (code === 91) {
+        // consume bracket
+        effects.consume(code);
+        effects.exit("inlineCiteMarker_alt"
+        /* inlineCiteMarker_alt */
+        ); // skip prefix, start looking for cite key
+
+        effects.enter("citeItem"
+        /* citeItem */
+        );
+        return alt_consumeInitialHyphen; //return consumeCiteItemKey;
+      } // if we see a different character, this is not a citation
+
+
       return nok(code);
-    } // otherwise, consume the next character of the prefix
+    }
+    /**
+     * (alt syntax) look for a hyphen in the first citation item, as in
+     *     `@[-suppressed]`
+     */
 
 
-    parseState.lastWasSpace = code === 32;
-    effects.consume(code);
-    return consumeCiteItemPrefix;
-  }
+    function alt_consumeInitialHyphen(code) {
+      // match hyphen `-`, indicating author suppression
+      if (code === 45) {
+        effects.enter("citeAuthorSuppress"
+        /* citeAuthorSuppress */
+        );
+        effects.consume(code);
+        effects.exit("citeAuthorSuppress"
+        /* citeAuthorSuppress */
+        ); // look for citation key 
 
-  function consumeCiteItemKey(code) {
-    // pandoc is specific about which characters are allowed
-    // in a citation key, but since javascript has no multi-
-    // lingual way to test for alphanumeric characters, we
-    // allow any characters EXCEPT whitespace and `];`
-    // match right square bracket `]` or item sep `;` to handle empty keys
-    if (code === 93 || code == 59) {
-      // handle empty key like `[prefix @]`
-      if (!parseState.nonEmptyKey) {
+        effects.enter("citeItemKey"
+        /* citeItemKey */
+        );
+        return consumeCiteItemKey;
+      } // if no hyphen found, the first item is not suppressed
+
+
+      effects.enter("citeItemKey"
+      /* citeItemKey */
+      );
+      return consumeCiteItemKey(code);
+    } // -- shared tokenizers --------------------------------
+
+    /**
+     * @precondition token `citeItem` has already been emitted
+     */
+
+
+    function consumeCiteItem(code) {
+      // we haven't found any content yet
+      parseState.nonEmptyKey = false;
+      effects.enter("citeItem"
+      /* citeItem */
+      ); // match hyphen `-`, indicating uathor suppression
+
+      if (code === 45) {
+        return lookaheadAuthorSuppress(code);
+      } // match at symbol `@`, beginning the citation key
+
+
+      if (code === 64) {
+        return consumeAtSymbol(code);
+      } // otherwise, we have a non-empty prefix
+
+
+      parseState.lastWasSpace = false;
+      parseState.inPrefix = true;
+      effects.enter("citeItemPrefix"
+      /* citeItemPrefix */
+      );
+      return consumeCiteItemPrefix(code);
+    }
+    /**
+     * @precondition `parseState.inPrefix = true`
+     * @precondition token `citeItemPrefix` has already been emitted
+     */
+
+
+    function consumeCiteItemPrefix(code) {
+      // match hyphen '-', possibly indicating author suppression
+      if (code === 45) {
+        return lookaheadAuthorSuppress(code);
+      } // match at symbol `@`, indicating end of prefix
+
+
+      if (code === 64) {
+        return consumeAtSymbol(code);
+      }
+      // at symbol, then this is not actually a citation token, so we stop
+
+      if (code === 93 || code === null) {
+        return nok(code);
+      } // otherwise, consume the next character of the prefix
+
+
+      parseState.lastWasSpace = code === 32;
+      effects.consume(code);
+      return consumeCiteItemPrefix;
+    }
+    /**
+     * When encountering a hyphen, we must look ahead at the next character
+     * to determine whether the hyphen indicates author suppression or is
+     * simply part of the citation prefix.
+     */
+
+
+    function lookaheadAuthorSuppress(code) {
+      // match hyphen `-`
+      if (code !== 45) {
+        return nok(code);
+      } // lookahead
+
+
+      return effects.check( // check if the next two characters are `-@`
+      lookaheadConstruct, // if they are, tokenize as citeAuthorSuppress
+      consumeAuthorSuppress, // otherwise, we're still in the prefix
+      consumeSingleCharInPrefix)(code);
+    }
+    /**
+     * Consumes a single character in prefix mode.
+     * @effect starts prefix mode if we weren't already in it
+     */
+
+
+    function consumeSingleCharInPrefix(code) {
+      // make sure we are in prefix mode
+      if (!parseState.inPrefix) {
+        effects.enter("citeItemPrefix"
+        /* citeItemPrefix */
+        );
+        parseState.inPrefix = true;
+      }
+
+      effects.consume(code);
+      return consumeCiteItemPrefix;
+    }
+    /**
+     * @precondition We already KNOW the next TWO characters are `-@`.
+     *     (called by `lookaheadAuthorSuppress`)
+     */
+
+
+    function consumeAuthorSuppress(code) {
+      // match hyphen `-`
+      if (code !== 45) {
+        return nok(code);
+      } // end prefix, if we previously started it
+
+
+      if (parseState.inPrefix) {
+        effects.exit("citeItemPrefix"
+        /* citeItemPrefix */
+        );
+        parseState.inPrefix = false;
+      } // consume hyphen
+
+
+      effects.enter("citeAuthorSuppress"
+      /* citeAuthorSuppress */
+      );
+      effects.consume(code);
+      effects.exit("citeAuthorSuppress"
+      /* citeAuthorSuppress */
+      ); // consume at symbol
+
+      return consumeAtSymbol;
+    }
+
+    function consumeAtSymbol(code) {
+      // match at symbol `@`
+      if (code !== 64) {
         return nok(code);
       }
 
-      effects.exit("citeItemKey"); // this item had no suffix
+      if (parseState.inPrefix) {
+        // the prefix end with a space character
+        if (!parseState.lastWasSpace) {
+          return nok(code);
+        } // indicate end of prefix, start of data
 
-      effects.exit("citeItem"); // match right square bracket `]`, indicating end of inlineCite node
+
+        effects.exit("citeItemPrefix"
+        /* citeItemPrefix */
+        );
+        parseState.inPrefix = false;
+      } // consume at symbol, which is not considered part of the key
+
+
+      effects.enter("citeItemSymbol"
+      /* citeItemSymbol */
+      );
+      effects.consume(code);
+      effects.exit("citeItemSymbol"
+      /* citeItemSymbol */
+      ); // next, get the text of the key
+
+      effects.enter("citeItemKey"
+      /* citeItemKey */
+      );
+      return consumeCiteItemKey;
+    }
+
+    function consumeCiteItemKey(code) {
+      // pandoc is specific about which characters are allowed
+      // in a citation key, but since javascript has no multi-
+      // lingual way to test for alphanumeric characters, we
+      // allow any characters EXCEPT whitespace and `];`
+      // match right square bracket `]` or item sep `;` to handle empty keys
+      if (code === 93 || code == 59) {
+        // handle empty key like `[prefix @]`
+        if (!parseState.nonEmptyKey) {
+          return nok(code);
+        }
+
+        effects.exit("citeItemKey"
+        /* citeItemKey */
+        ); // this item had no suffix
+
+        effects.exit("citeItem"
+        /* citeItem */
+        ); // match right square bracket `]`, indicating end of inlineCite node
+
+        if (code === 93) {
+          // continue without consuming the closing bracket `]`
+          return consumeCiteEnd(code);
+        } // match semicolon `;`, indicating, the end of the current citeItem
+
+
+        if (code === 59) {
+          // consume item separator `;`
+          effects.enter("citeItemSep"
+          /* citeItemSep */
+          );
+          effects.consume(code);
+          effects.exit("citeItemSep"
+          /* citeItemSep */
+          ); // continue to the next item
+
+          return consumeCiteItem;
+        }
+      } // match space or comma, indicating start of suffix
+
+
+      if (code === 32 || code === 44) {
+        // handle empty key like `[prefix @, suffix]`
+        if (!parseState.nonEmptyKey) {
+          return nok(code);
+        }
+
+        effects.exit("citeItemKey"
+        /* citeItemKey */
+        ); // continue to suffix, without consuming character
+        // (this character belongs to the suffix, so suffix is non-empty)
+
+        effects.enter("citeItemSuffix"
+        /* citeItemSuffix */
+        );
+        return consumeCiteItemSuffix(code);
+      } // CR, LF, CRLF, HT, VS (whitespace, EOLs, EOF)
+
+
+      if (code === null || code < 0) {
+        return nok(code);
+      }
+
+      parseState.nonEmptyKey = true; // otherwise, continue consuming characters
+
+      effects.consume(code);
+      return consumeCiteItemKey;
+    }
+
+    function consumeCiteItemSuffix(code) {
+      // fail on eof
+      if (code === null) {
+        return nok(code);
+      } // match right square bracket `]`, indicating end of inlineCite node
+
 
       if (code === 93) {
-        // continue without consuming the closing bracket `]`
+        // we're done!  close this item and finish up
+        effects.exit("citeItemSuffix"
+        /* citeItemSuffix */
+        );
+        effects.exit("citeItem"
+        /* citeItem */
+        ); // continue without consuming the closing bracket `]`
+
         return consumeCiteEnd(code);
       } // match semicolon `;`, indicating, the end of the current citeItem
 
 
       if (code === 59) {
-        // consume item separator `;`
-        effects.enter("citeItemSep");
+        effects.exit("citeItemSuffix"
+        /* citeItemSuffix */
+        );
+        effects.exit("citeItem"
+        /* citeItem */
+        ); // consume item separator `;`
+
+        effects.enter("citeItemSep"
+        /* citeItemSep */
+        );
         effects.consume(code);
-        effects.exit("citeItemSep"); // continue to the next item
+        effects.exit("citeItemSep"
+        /* citeItemSep */
+        ); // continue to the next item
 
         return consumeCiteItem;
-      }
-    } // match space or comma, indicating start of suffix
+      } // otherwise, continue consuming characters
 
 
-    if (code === 32 || code === 44) {
-      // handle empty key like `[prefix @, suffix]`
-      if (!parseState.nonEmptyKey) {
-        return nok(code);
-      }
-
-      effects.exit("citeItemKey"); // continue to suffix, without consuming character
-      // (this character belongs to the suffix, so suffix is non-empty)
-
-      effects.enter("citeItemSuffix");
-      return consumeCiteItemSuffix(code);
-    } // CR, LF, CRLF, HT, VS (whitespace, EOLs, EOF)
-
-
-    if (code === null || code < 0) {
-      return nok(code);
+      effects.consume(code);
+      return consumeCiteItemSuffix;
     }
 
-    parseState.nonEmptyKey = true; // otherwise, continue consuming characters
-
-    effects.consume(code);
-    return consumeCiteItemKey;
-  }
-
-  function consumeCiteItemSuffix(code) {
-    // fail on eof
-    if (code === null) {
-      return nok(code);
-    } // match right square bracket `]`, indicating end of inlineCite node
+    function consumeCiteEnd(code) {
+      // match right square bracket `]`
+      if (code !== 93) {
+        return nok(code);
+      } // consume closing bracket `]`
 
 
-    if (code === 93) {
-      // we're done!  close this item and finish up
-      effects.exit("citeItemSuffix");
-      effects.exit("citeItem"); // continue without consuming the closing bracket `]`
-
-      return consumeCiteEnd(code);
-    } // match semicolon `;`, indicating, the end of the current citeItem
-
-
-    if (code === 59) {
-      effects.exit("citeItemSuffix");
-      effects.exit("citeItem"); // consume item separator `;`
-
-      effects.enter("citeItemSep");
+      effects.enter("inlineCiteMarker"
+      /* inlineCiteMarker */
+      );
       effects.consume(code);
-      effects.exit("citeItemSep"); // continue to the next item
+      effects.exit("inlineCiteMarker"
+      /* inlineCiteMarker */
+      );
+      effects.exit("inlineCite"
+      /* inlineCite */
+      ); // we're all done!
 
-      return consumeCiteItem;
-    } // otherwise, continue consuming characters
-
-
-    effects.consume(code);
-    return consumeCiteItemSuffix;
-  }
-
-  function consumeCiteEnd(code) {
-    // match right square bracket `]`
-    if (code !== 93) {
-      return nok(code);
-    } // consume closing bracket `]`
-
-
-    effects.enter("inlineCiteMarker");
-    effects.consume(code);
-    effects.exit("inlineCiteMarker");
-    effects.exit("inlineCite"); // we're all done!
-
-    return ok;
-  }
+      return ok;
+    }
+  };
 };
 
 export { citeExtension, html };

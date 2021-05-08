@@ -8,6 +8,7 @@ interface CiteItem {
     prefix?: string;
     key: string;
     suffix?: string;
+    suppressAuthor?: true | undefined;
 }
 interface InlineCiteNode extends Uni.Literal {
     type: "cite";
@@ -29,12 +30,18 @@ interface CiteToMarkdownOptions {
      */
     standardizeAltSyntax: boolean;
     /**
+     * When `false`, will not suppress authors in the output.
+     *
+     * @default true
+     */
+    enableAuthorSuppression: boolean;
+    /**
      * `micromark-extension-cite` stores the original Markdown source for each
      * citation in the `value` property of each `InlineCiteNode`.  When this
      * option is `true`, every citation node serializes to its `value`, rather
      * than being reconstructed from `data.citeItems`.
      *
-     * This setting overrides the `standardizeAltSyntax` option.
+     * This setting overrides all other options.
      *
      * @default false
      */

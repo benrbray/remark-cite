@@ -7,7 +7,8 @@ import { MdastExtension } from "mdast-util-from-markdown/types";
 export interface CiteItem {
 	prefix?: string,
 	key: string,
-	suffix?: string
+	suffix?: string,
+	suppressAuthor?: true|undefined
 }
 
 export interface InlineCiteNode extends Uni.Literal {
@@ -31,6 +32,7 @@ export const citeFromMarkdown: MdastExtension = {
 		inlineCiteMarker_alt: exitInlineCiteMarker_alt,
 		citeItem: exitCiteItem,
 		citeItemPrefix: exitCiteItemPrefix,
+		citeAuthorSuppress: exitCiteAuthorSuppress,
 		citeItemKey: exitCiteItemKey,
 		citeItemSuffix: exitCiteItemSuffix
 	}
@@ -99,6 +101,15 @@ function exitCiteItem(this: any, token: Token) {
 	const currentNode = top(this.stack) as InlineCiteNode;
 	const currentItem = top(currentNode.data.citeItems);
 	const citeSrc = this.sliceSerialize(token);
+}
+
+// -- citeAuthorSuppresss ----------------------------------
+
+function exitCiteAuthorSuppress(this: any, token: Token) {
+	const currentNode = top(this.stack) as InlineCiteNode;
+	const currentItem = top(currentNode.data.citeItems);
+
+	currentItem.suppressAuthor = true;
 }
 
 // -- citeItemKey ------------------------------------------

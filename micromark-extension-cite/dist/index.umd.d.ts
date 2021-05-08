@@ -19,7 +19,7 @@ declare function html(this: any, opts?: CiteHtmlOptions): {
         citeItemKey: (this: any, token: Token) => void;
     };
 };
-interface CiteOptions {
+interface CiteSyntaxOptions {
     /**
      * Enable the alternative syntax, like `@[wadler1989]`.
      * The first citation item can have a prefix, but not a suffix.
@@ -44,22 +44,7 @@ interface CiteOptions {
  *    [@hughes1989, sec 3.4]                      --> (Hughes 1989, sec 3.4)
  *    [see @wadler1990; and @hughes1989, pp. 4]   --> (see Wadler 1990 and Hughes 1989, pp. 4)
  *    ```
- *
- * This extension introduces a new `unist` node type.
- *
- *     interface CitationInfo {
- *         prefix?: string;
- *         key: string;
- *         suffix?: string;
- *     }
- *
- *     interface Citation <: Literal {
- *         type: "citation"
- *         data: {
- *             citeItems: CitationInfo[]
- *         }
- *     }
  */
-declare const citeExtension: (options: Partial<CiteOptions>) => MM.SyntaxExtension;
-export { html, CiteOptions, citeExtension };
+declare const citeExtension: (options: Partial<CiteSyntaxOptions>) => MM.SyntaxExtension;
+export { html, CiteSyntaxOptions, citeExtension };
 //# sourceMappingURL=index.umd.d.ts.map

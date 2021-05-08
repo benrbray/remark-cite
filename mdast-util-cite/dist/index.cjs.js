@@ -13,6 +13,7 @@ var citeFromMarkdown = {
     inlineCiteMarker_alt: exitInlineCiteMarker_alt,
     citeItem: exitCiteItem,
     citeItemPrefix: exitCiteItemPrefix,
+    citeAuthorSuppress: exitCiteAuthorSuppress,
     citeItemKey: exitCiteItemKey,
     citeItemSuffix: exitCiteItemSuffix
   }
@@ -77,6 +78,13 @@ function exitCiteItem(token) {
   var currentNode = top(this.stack);
   top(currentNode.data.citeItems);
   this.sliceSerialize(token);
+} // -- citeAuthorSuppresss ----------------------------------
+
+
+function exitCiteAuthorSuppress(token) {
+  var currentNode = top(this.stack);
+  var currentItem = top(currentNode.data.citeItems);
+  currentItem.suppressAuthor = true;
 } // -- citeItemKey ------------------------------------------
 
 
@@ -286,6 +294,7 @@ function citeToMarkdown() {
   // fill in option defaults
   var settings = Object.assign({
     standardizeAltSyntax: false,
+    enableAuthorSuppression: true,
     useNodeValue: false
   }, options); // TODO:  I don't fully understand what this does, but I did my
   // best to fill it in based on what I saw in other mdast utils
@@ -325,18 +334,20 @@ function citeToMarkdown() {
       var key = safe_1(context, item.key, {
         before: "@"
       });
-      exitKey();
+      exitKey(); // be careful not to include a prefix for the first tiem when using alternative syntax 
+
       var prefix = item.prefix && (!useAltSyntax || idx > 0) ? safe_1(context, item.prefix, {}) : "";
       var suffix = item.suffix ? safe_1(context, item.suffix, {}) : "";
+      var suppress = settings.enableAuthorSuppression && item.suppressAuthor === true ? "-" : "";
 
       if (idx === 0) {
         if (useAltSyntax) {
-          return "@[".concat(key).concat(suffix);
+          return "@[".concat(suppress).concat(key).concat(suffix);
         } else {
-          return "[".concat(prefix, "@").concat(key).concat(suffix);
+          return "[".concat(prefix).concat(suppress, "@").concat(key).concat(suffix);
         }
       } else {
-        return ";".concat(prefix, "@").concat(key).concat(suffix);
+        return ";".concat(prefix).concat(suppress, "@").concat(key).concat(suffix);
       }
     });
     exit();

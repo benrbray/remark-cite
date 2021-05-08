@@ -19,12 +19,18 @@ export interface CiteToMarkdownOptions {
 	 */
 	standardizeAltSyntax: boolean;
 	/**
+	 * When `false`, will not suppress authors in the output.
+	 * 
+	 * @default true
+	 */
+	enableAuthorSuppression: boolean;
+	/**
 	 * `micromark-extension-cite` stores the original Markdown source for each
 	 * citation in the `value` property of each `InlineCiteNode`.  When this
 	 * option is `true`, every citation node serializes to its `value`, rather
 	 * than being reconstructed from `data.citeItems`.
 	 * 
-	 * This setting overrides the `standardizeAltSyntax` option.
+	 * This setting overrides all other options.
 	 * 
 	 * @default false
 	 */
@@ -40,6 +46,7 @@ export function citeToMarkdown (options: Partial<CiteToMarkdownOptions> = {}) {
 	// fill in option defaults
 	const settings: CiteToMarkdownOptions = Object.assign({
 		standardizeAltSyntax: false,
+		enableAuthorSuppression: true,
 		useNodeValue: false
 	}, options);
 	
@@ -80,14 +87,16 @@ export function citeToMarkdown (options: Partial<CiteToMarkdownOptions> = {}) {
 			const key = safe(context, item.key, { before: "@" });
 			exitKey();
 
+			// be careful not to include a prefix for the first tiem when using alternative syntax 
 			const prefix = (item.prefix && (!useAltSyntax || idx > 0)) ? safe(context, item.prefix, {}) : "";
 			const suffix = item.suffix ? safe(context, item.suffix, {}) : "";
+			const suppress = (settings.enableAuthorSuppression && item.suppressAuthor === true) ? "-" : "";
 
 			if(idx === 0) {
-				if(useAltSyntax) { return `@[${key}${suffix}` }
-				else { return `[${prefix}@${key}${suffix}` }
+				if(useAltSyntax) { return `@[${suppress}${key}${suffix}` }
+				else { return `[${prefix}${suppress}@${key}${suffix}` }
 			} else {
-				return `;${prefix}@${key}${suffix}`
+				return `;${prefix}${suppress}@${key}${suffix}`
 			} 
 		});
 		exit();

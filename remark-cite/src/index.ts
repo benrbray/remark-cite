@@ -1,4 +1,4 @@
-import { citeExtension, CiteOptions } from "@benrbray/micromark-extension-cite";
+import { citeExtension, CiteSyntaxOptions } from "@benrbray/micromark-extension-cite";
 import { citeFromMarkdown, citeToMarkdown } from "@benrbray/mdast-util-cite";
 
 ////////////////////////////////////////////////////////////
@@ -24,7 +24,11 @@ function remarkV13Warning(context: any): boolean {
 	return warningIssued;
 }
 
-export function citePlugin(this: any, options: Partial<CiteOptions>) {
+export interface CitePluginOptions extends CiteSyntaxOptions {
+	// add extra options here, in addition to those for the syntax extension
+}
+
+export function citePlugin(this: any, options: Partial<CitePluginOptions>) {
 	var data = this.data()
 
 	// warn for earlier versions
