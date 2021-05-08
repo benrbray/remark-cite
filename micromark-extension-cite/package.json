@@ -1,7 +1,8 @@
 {
 	"name": "@benrbray/micromark-extension-cite",
-	"version": "0.0.0",
+	"version": "1.0.0",
 	"license": "MIT",
+	"private": false,
 	"description": "Micromark syntax extension for pandoc-style citations.",
 	"repository": {
 		"type": "git",
