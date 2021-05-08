@@ -34,7 +34,7 @@
 		"clean": "npx del dist",
 		"prepare": "npm run clean; npm run build",
 		"pretest": "npm run clean; npm run build",
-		"test": "npm run build && env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'test/**/*.ts'",
+		"test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'test/**/*.ts'",
 		"dev:fix-links": "npm link @benrbray/micromark-extension-cite @benrbray/mdast-util-cite"
 	},
 	"devDependencies": {
