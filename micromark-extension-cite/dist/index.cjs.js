@@ -12,7 +12,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
  * if the input token stream is invalid, this function will
  * likely produce mysterious, difficult-to-diagnose errors.
  */
-function html() {
+function citeHtml() {
 
   // ---- inlineCite ---------------------------------- //
   function enterInlineCite() {
@@ -77,7 +77,7 @@ function html() {
  *    ```
  */
 
-var citeExtension = function citeExtension(options) {
+var citeSyntax = function citeSyntax(options) {
   // handle user configuration
   var settings = Object.assign({
     enableAltSyntax: false,
@@ -547,6 +547,6 @@ var citeTokenize = function citeTokenize(altSyntax) {
   };
 };
 
-exports.citeExtension = citeExtension;
-exports.html = html;
+exports.citeHtml = citeHtml;
+exports.citeSyntax = citeSyntax;
 //# sourceMappingURL=index.cjs.js.map

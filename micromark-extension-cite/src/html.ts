@@ -22,7 +22,7 @@ export type CiteHtmlOptions = {};
  * if the input token stream is invalid, this function will
  * likely produce mysterious, difficult-to-diagnose errors.
  */
-export function html(this: any, opts: CiteHtmlOptions = {}) {
+export function citeHtml(this: any, opts: CiteHtmlOptions = {}) {
 
 	// ---- inlineCite ---------------------------------- //
 

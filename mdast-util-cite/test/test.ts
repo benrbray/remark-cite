@@ -9,7 +9,7 @@ import toMarkdown from 'mdast-util-to-markdown';
 ////////////////////////////////////////////////////////////
 
 // project imports
-import { citeExtension, CiteSyntaxOptions } from '@benrbray/micromark-extension-cite'
+import { citeSyntax, CiteSyntaxOptions } from '@benrbray/micromark-extension-cite'
 import { CiteItem, CiteToMarkdownOptions, InlineCiteNode } from "..";
 import * as mdastCiteExt from "..";
 
@@ -537,7 +537,7 @@ function runTestSuite_fromMarkdown(contextMsg: string, descPrefix:string, testSu
 
 				// markdown -> ast
 				const ast = fromMarkdown(testCase.markdown, {
-					extensions: [citeExtension(options)],
+					extensions: [citeSyntax(options)],
 					mdastExtensions: [
 						mdastCiteExt.citeFromMarkdown
 					]

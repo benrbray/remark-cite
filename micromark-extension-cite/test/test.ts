@@ -8,7 +8,7 @@ console.log("hello, mocha!");
 import micromark from "micromark/lib";
 
 // project imports
-import { citeExtension, CiteSyntaxOptions, html } from '..';
+import { citeSyntax, CiteSyntaxOptions, citeHtml } from '..';
 
 ////////////////////////////////////////////////////////////
 
@@ -383,8 +383,8 @@ function runTestSuite(contextMsg: string, descPrefix:string, testSuite: TestSuit
 			it(desc, () => {
 				let options = Object.assign({}, testSuite.options, testCase.options);
 				let serialized = micromark(testCase.markdown, {
-					extensions: [citeExtension(options)],
-					htmlExtensions: [html()]
+					extensions: [citeSyntax(options)],
+					htmlExtensions: [citeHtml()]
 				});
 				assert.strictEqual(serialized, testCase.html);
 			});

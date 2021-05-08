@@ -4,7 +4,7 @@ import * as MM from "micromark/dist/shared-types";
 import { CodeAsKey } from "micromark/lib/shared-types";
 
 // html converts token stream directly to html
-export { html } from "./html"; 
+export { citeHtml } from "./html"; 
 
 ////////////////////////////////////////////////////////////
 
@@ -115,8 +115,8 @@ interface TypeSafeEffects<T extends string> {
 
 export interface CiteSyntaxOptions {
 	/**
-	 * Enable the alternative syntax, like `@[wadler1989]`.
-	 * The first citation item can have a prefix, but not a suffix.
+	 * Enable the alternative syntax, `@[wadler1989]`.  The
+	 * first citation item can have a suffix, but no prefix.
 	 * There are no restrictions on subsequent items.
 	 * @default `false`
 	 */
@@ -140,7 +140,7 @@ export interface CiteSyntaxOptions {
  *    [see @wadler1990; and @hughes1989, pp. 4]   --> (see Wadler 1990 and Hughes 1989, pp. 4)
  *    ```
  */
-export const citeExtension = (function (options?: Partial<CiteSyntaxOptions>): SyntaxExtension {
+export const citeSyntax = (function (options?: Partial<CiteSyntaxOptions>): SyntaxExtension {
 	// handle user configuration
 	const settings = Object.assign({
 		enableAltSyntax:    false,

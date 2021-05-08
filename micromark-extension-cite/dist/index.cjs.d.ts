@@ -10,7 +10,7 @@ type CiteHtmlOptions = {};
  * if the input token stream is invalid, this function will
  * likely produce mysterious, difficult-to-diagnose errors.
  */
-declare function html(this: any, opts?: CiteHtmlOptions): {
+declare function citeHtml(this: any, opts?: CiteHtmlOptions): {
     enter: {
         inlineCite: (this: any) => void;
     };
@@ -21,8 +21,8 @@ declare function html(this: any, opts?: CiteHtmlOptions): {
 };
 interface CiteSyntaxOptions {
     /**
-     * Enable the alternative syntax, like `@[wadler1989]`.
-     * The first citation item can have a prefix, but not a suffix.
+     * Enable the alternative syntax, `@[wadler1989]`.  The
+     * first citation item can have a suffix, but no prefix.
      * There are no restrictions on subsequent items.
      * @default `false`
      */
@@ -45,6 +45,6 @@ interface CiteSyntaxOptions {
  *    [see @wadler1990; and @hughes1989, pp. 4]   --> (see Wadler 1990 and Hughes 1989, pp. 4)
  *    ```
  */
-declare const citeExtension: (options: Partial<CiteSyntaxOptions>) => MM.SyntaxExtension;
-export { html, CiteSyntaxOptions, citeExtension };
+declare const citeSyntax: (options: Partial<CiteSyntaxOptions>) => MM.SyntaxExtension;
+export { citeHtml, CiteSyntaxOptions, citeSyntax };
 //# sourceMappingURL=index.cjs.d.ts.map

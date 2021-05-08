@@ -20,7 +20,7 @@ function citePlugin(options) {
   var data = this.data(); // warn for earlier versions
 
   remarkV13Warning(this);
-  add('micromarkExtensions', micromarkExtensionCite.citeExtension(options));
+  add('micromarkExtensions', micromarkExtensionCite.citeSyntax(options));
   add('fromMarkdownExtensions', mdastUtilCite.citeFromMarkdown);
   add('toMarkdownExtensions', mdastUtilCite.citeToMarkdown);
 
