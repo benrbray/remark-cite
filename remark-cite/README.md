@@ -1,5 +1,8 @@
 # `remark-cite`
 
+[![](https://img.shields.io/npm/v/@benrbray/remark-cite?style=flat-square)](https://www.npmjs.com/package/@benrbray/remark-cite)
+![license](https://img.shields.io/github/license/benrbray/remark-cite?style=flat-square)
+
 Plugin for [`remark`](https://github.com/remarkjs/remark) to support [`pandoc`-style](https://pandoc.org/MANUAL.html#extension-citations) citations.  Relies on [`micromark-extension-cite`](https://github.com/benrbray/remark-cite/tree/master/micromark-extension-cite) for tokenization and [`mdast-util-cite`](https://github.com/benrbray/remark-cite/tree/master/mdast-util-cite) for converting markdown to/from abstract syntax trees.
 
 Note that this extension only parses the input -- it is up to you to assign meaning to these citations by looking up each key in a `.bibtex` file or other tagged citation database.
