@@ -2,6 +2,8 @@
 import assert from "assert";
 import { isEqual } from "lodash";
 
+console.log("hello, mocha!");
+
 // micromark
 import micromark from "micromark/lib";
 
@@ -102,6 +104,18 @@ const pandocMatchSuite: TestSuite = { cases: [
 	},{
 		markdown: "[@cite1 @cite2]",
 		html: '<p><span class="citation" data-cites="cite1">[@cite1 @cite2]</span></p>'
+	},{
+		markdown: "[-",
+		html: '<p>[-</p>',
+	},{
+		markdown: "[@",
+		html: '<p>[@</p>',
+	},{
+		markdown: "[-@",
+		html: '<p>[-@</p>',
+	},{
+		markdown: "[-@;",
+		html: '<p>[-@;</p>',
 	},
 	// make sure we don't treat emails as citations
 	{
@@ -118,8 +132,19 @@ const pandocMatchSuite: TestSuite = { cases: [
 	{
 		description: "escape first at symbol",
 		markdown: "[\\@escape]",
-		html: '<<p>[@escape]</p>',
+		html: '<p>[@escape]</p>',
 	},
+	// check that suppress author syntax parses
+	// (suppression only appears in AST)
+	{
+		description: "author suppression",
+		markdown: "[-@author1990]",
+		html: '<p><span class="citation" data-cites="author1990">[-@author1990]</span></p>',
+	},{
+		description: "author suppression",
+		markdown: "[see @author:1990, sec. 3.1; and also -@author:2001 on page 77 ; but don't forget -@author:2017 chapter 5]",
+		html: '<p><span class="citation" data-cites="author:1990 author:2001 author:2017">[see @author:1990, sec. 3.1; and also -@author:2001 on page 77 ; but don\'t forget -@author:2017 chapter 5]</span></p>',
+	}
 ] };
 
 
@@ -147,7 +172,7 @@ const pandocExceptCases : (TestCaseSimple & { pandoc: string})[] = [
 		pandoc: '<p>[<span class="citation" data-cites="author:1990">@author:1990</span>;bad]</p>'
 	},{
 		markdown: "[@eof ",
-		html: '<p>[@eof </p>',
+		html: '<p>[@eof</p>',
 		pandoc: '<p>[<span class="citation" data-cites="re">@re</span></p>'
 	},{
 		markdown: "[@eof ;",
@@ -158,11 +183,18 @@ const pandocExceptCases : (TestCaseSimple & { pandoc: string})[] = [
 		html: '<p>[@eof ; pre</p>',
 		pandoc: '<p>[<span class="citation" data-cites="eof">@eof</span> ; pre</p>'
 	},
+	// missing at symbol (pandoc seems to disallow `;` in prefix, but we don't)
+	{
+		description: "missing at symbol in multi-citation",
+		markdown: "[author:1990; @author:2001; @author:2017]",
+		html: '<p><span class="citation" data-cites="author:2001 author:2017">[author:1990; @author:2001; @author:2017]</span></p>',
+		pandoc: '<p>[author:1990; <span class="citation" data-cites="author:2001">@author:2001</span>; <span class="citation" data-cites="author:2017">@author:2017</span>]</p>'
+	},
 	// escape pandoc syntax
 	{
 		description: "escape second at symbol",
 		markdown: "[@escape; and \\@escape]",
-		html: '<p>[@escape; and \\@escape]</p>',
+		html: '<p>[@escape; and @escape]</p>',
 		pandoc: '<p>[<span class="citation" data-cites="escape">@escape</span>; and @escape]</p>'
 	}
 ]
@@ -214,13 +246,16 @@ const altSyntaxCases: TestCaseSimple[] = [
 	// various kinds of malformed input
 	{
 		markdown: "@[eof ]",
-		html: '<p>@[eof </p>'
+		html: '<p><span class="citation" data-cites="eof">@[eof ]</span></p>'
+	},{
+		markdown: "@[eof ",
+		html: '<p>@[eof</p>'
 	},{
 		markdown: "@[eof ;",
 		html: '<p>@[eof ;</p>'
 	},{
 		markdown: "@[eof ; pre ",
-		html: '<p>@[eof ;</p>'
+		html: '<p>@[eof ; pre</p>'
 	},
 	// make sure we don't treat emails as citations
 	{
@@ -242,6 +277,17 @@ const altSyntaxCases: TestCaseSimple[] = [
 		description: "escape at symbol",
 		markdown: "@[escape; and \\@escape]",
 		html: '<p>@[escape; and @escape]</p>'
+	},
+	// check that suppress author syntax parses
+	// (suppression only appears in AST)
+	{
+		description: "author suppression",
+		markdown: "@[-author1990]",
+		html: '<p><span class="citation" data-cites="author:1990">@[-author:1990]</span></p>',
+	},{
+		description: "author suppression",
+		markdown: "@[author:1990, sec. 3.1; and also -@author:2001 on page 77 ; but don't forget -@author:2017 chapter 5]",
+		html: '<p><span class="citation" data-cites="author:1990 author:2001 author:2017">@[author:1990, sec. 3.1; and also -@author:2001 on page 77 ; but don\'t forget -@author:2017 chapter 5]</span></p>',
 	}
 ];
 
@@ -283,7 +329,7 @@ const noPandocSuite: TestSuite = {
 //// TEST CASES: ALT SYNTAX DISABLED ///////////////////////
 
 const noAltCases: TestCaseSimple[] = [
-	// valid input for single citation input
+	// single citation
 	{
 		markdown: "@[author:1990]",
 		html: '<p>@[author:1990]</p>'
@@ -291,13 +337,14 @@ const noAltCases: TestCaseSimple[] = [
 		markdown: "@[author:1990:kebab-case, pp. 89-90]",
 		html: '<p>@[author:1990:kebab-case, pp. 89-90]</p>'
 	},
-	// valid input for multiple citations
+	// multiple citations
 	{
 		markdown: "pandoc is @[**disabled**]",
-		html: '<p>pandoc is @[<strong>bold</strong>]</p>'
+		html: '<p>pandoc is @[<strong>disabled</strong>]</p>'
 	},{
+		description: "missing at symbol",
 		markdown: "@[author:1990; @author:2001; @author:2017 ]",
-		html: '<p>@[author:1990; @author:2001; @author:2017 ]</p>'
+		html: '<p>@<span class="citation" data-cites="author:2001 author:2017">[author:1990; @author:2001; @author:2017 ]</span></p>'
 	}
 ];
 
@@ -330,15 +377,12 @@ function runTestSuite(contextMsg: string, descPrefix:string, testSuite: TestSuit
 		for(let testCase of testSuite.cases) {
 			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}] ` + (testCase.description || "");
 			it(desc, () => {
-				it(desc, () => {
-					let options = Object.assign({}, testSuite.options, testCase.options);
-					let serialized = micromark(testCase.markdown, {
-						extensions: [citeExtension(options)],
-						htmlExtensions: [html()]
-					});
-
-					assert.strictEqual(serialized, testCase.html);
+				let options = Object.assign({}, testSuite.options, testCase.options);
+				let serialized = micromark(testCase.markdown, {
+					extensions: [citeExtension(options)],
+					htmlExtensions: [html()]
 				});
+				assert.strictEqual(serialized, testCase.html);
 			});
 		}
 	});
