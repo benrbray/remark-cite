@@ -1,5 +1,8 @@
 # `micromark-extension-cite`
 
+[![](https://img.shields.io/npm/v/@benrbray/micromark-extension-cite?style=flat-square)](https://www.npmjs.com/package/@benrbray/micromark-extension-cite)
+![license](https://img.shields.io/github/license/benrbray/remark-cite?style=flat-square)
+
 A **[`micromark`](https://github.com/micromark/micromark)** syntax extension for [`pandoc`-style](https://pandoc.org/MANUAL.html#extension-citations) citations, providing the low-level modules for integrating with the micromark tokenizer and the micromark HTML compiler.
 
 You probably shouldn’t use this package directly, but instead use [`mdast-util-cite`](https://github.com/benrbray/remark-cite/tree/master/mdast-util-cite) with [mdast](https://github.com/syntax-tree/mdast) or [`remark-cite`](https://github.com/benrbray/remark-cite/tree/master/remark-cite) with [remark](https://github.com/remarkjs/remark).
