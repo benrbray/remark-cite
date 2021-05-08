@@ -53,5 +53,9 @@
 		"rollup": "^2.47.0",
 		"ts-node": "^9.1.1",
 		"unified": "^9.2.1"
+	},
+	"dependencies": {
+		"@benrbray/mdast-util-cite": "^1.0.1",
+		"@benrbray/micromark-extension-cite": "^1.0.0"
 	}
 }
