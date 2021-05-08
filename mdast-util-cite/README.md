@@ -1,4 +1,4 @@
-# `micromark-extension-cite`
+# `mdast-util-cite`
 
 Extension for [`mdast-util-from-markdown`](https://github.com/syntax-tree/mdast-util-from-markdown) and
 [`mdast-util-to-markdown`](https://github.com/syntax-tree/mdast-util-to-markdown) to support [`pandoc`-style](https://pandoc.org/MANUAL.html#extension-citations) citations.  Converts the token stream produced by [`micromark-extension-cite`](https://github.com/benrbray/remark-cite/tree/master/micromark-extension-cite) into an abstract syntax tree.  
