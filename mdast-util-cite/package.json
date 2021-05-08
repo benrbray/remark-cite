@@ -54,5 +54,8 @@
 		"ts-node": "^9.1.1",
 		"unified": "^9.2.1",
 		"unist-util-visit": "^3.0.1"
+	},
+	"dependencies": {
+		"@benrbray/micromark-extension-cite": "^1.0.0"
 	}
 }
