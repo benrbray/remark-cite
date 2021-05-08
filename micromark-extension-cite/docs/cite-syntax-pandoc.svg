@@ -1,18 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg class="railroad-diagram" width="641" height="132" viewBox="0 0 641 132">
-	<!--
+<!--
 https://dundalek.com/grammkit
 
 cite
-    = "[" (prefix " ")? "@" key ((" "/",") suffix)? (";" (prefix " ")? "@" key ((" "/",") suffix)?)* "]"
-
+= "[" prefix "-"? "@" key (" "/",") suffix (";" prefix "-"?  "@" key (" "/",") suffix)* "]"
 altCite
-    /* I need to write in this order        vvvvvvvvvv to work around grammkit bug */
-    = "@" "[" key ((" "/",") suffix)? (";" (" " prefix)? "@" key ((" "/",") suffix)?)* "]"
+= "@" "[" "-"? key (" "/",") suffix (";" prefix "-" "@" key (" "/",") suffix)* "]"
 -->
 	<style>
 		/* https://github.com/dundalek/GrammKit/blob/master/app/diagram.css */
 		svg.railroad-diagram {
-			background-color: #fff;
+			background-color: rgba(0, 0, 0, 0);
 		}
 
 		svg.railroad-diagram path {
