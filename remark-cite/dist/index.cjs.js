@@ -20,9 +20,9 @@ function citePlugin(options) {
   var data = this.data(); // warn for earlier versions
 
   remarkV13Warning(this);
-  add('micromarkExtensions', micromarkExtensionCite.citeSyntax(options));
+  add('micromarkExtensions', micromarkExtensionCite.citeSyntax(options.syntax || {}));
   add('fromMarkdownExtensions', mdastUtilCite.citeFromMarkdown);
-  add('toMarkdownExtensions', mdastUtilCite.citeToMarkdown);
+  add('toMarkdownExtensions', mdastUtilCite.citeToMarkdown(options.toMarkdown || {}));
 
   function add(field, value) {
     if (data[field]) data[field].push(value);else data[field] = [value];

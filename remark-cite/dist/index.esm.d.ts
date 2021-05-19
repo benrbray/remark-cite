@@ -1,5 +1,8 @@
 import { CiteSyntaxOptions } from "@benrbray/micromark-extension-cite";
-interface CitePluginOptions extends CiteSyntaxOptions {
+import { CiteToMarkdownOptions } from "@benrbray/mdast-util-cite";
+interface CitePluginOptions {
+    syntax: Partial<CiteSyntaxOptions>;
+    toMarkdown: Partial<CiteToMarkdownOptions>;
 }
 declare function citePlugin(this: any, options: Partial<CitePluginOptions>): void;
 export { CitePluginOptions, citePlugin };

@@ -1,5 +1,5 @@
 import { citeSyntax } from '@benrbray/micromark-extension-cite';
-import { citeFromMarkdown, citeToMarkdown } from '@benrbray/mdast-util-cite';
+import { citeToMarkdown, citeFromMarkdown } from '@benrbray/mdast-util-cite';
 
 var warningIssued = false;
 
@@ -16,9 +16,9 @@ function citePlugin(options) {
   var data = this.data(); // warn for earlier versions
 
   remarkV13Warning(this);
-  add('micromarkExtensions', citeSyntax(options));
+  add('micromarkExtensions', citeSyntax(options.syntax || {}));
   add('fromMarkdownExtensions', citeFromMarkdown);
-  add('toMarkdownExtensions', citeToMarkdown);
+  add('toMarkdownExtensions', citeToMarkdown(options.toMarkdown || {}));
 
   function add(field, value) {
     if (data[field]) data[field].push(value);else data[field] = [value];

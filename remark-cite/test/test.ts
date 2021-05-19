@@ -3,6 +3,7 @@ import unified from 'unified';
 import * as Uni from "unist";
 import markdown from 'remark-parse';
 import remark2markdown from 'remark-stringify';
+var remarkStringify = require('remark-stringify')
 
 // // testing
 import * as assert from 'assert';
@@ -87,20 +88,20 @@ export function visitNodeType<S extends string, N extends Uni.Node & { type: S }
 
 ////////////////////////////////////////////////////////////
 
-function runTestSuite(contextMsg: string, descPrefix:string, testSuite: MdastUtilCiteTests.TestSuite<MdastUtilCiteTests.TestFromMd>): void {
+function runTestSuite_fromMarkdown(contextMsg: string, descPrefix:string, testSuite: MdastUtilCiteTests.TestSuite<MdastUtilCiteTests.TestFromMd>): void {
 	context(contextMsg, () => {
 
 		let idx = 0;
 		for(let testCase of testSuite.cases) {
-			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}]` + (testCase.description || "");
+			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}] ` + (testCase.description || "");
 			it(desc, () => {
 				// merge suite options with case options
-				let options = Object.assign({}, testSuite.options, testCase.options);
+				let syntaxOptions = Object.assign({}, testSuite.options, testCase.options);
 
 				// markdown -> ast
 				const processor = unified()
 					.use(markdown)
-					.use(remarkCitePlugin, options);
+					.use(remarkCitePlugin, { syntax: syntaxOptions });
 
 				var ast = processor.parse(testCase.markdown);
 				ast = processor.runSync(ast);
@@ -123,15 +124,49 @@ function runTestSuite(contextMsg: string, descPrefix:string, testSuite: MdastUti
 
 ////////////////////////////////////////////////////////////
 
+function runTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuite: MdastUtilCiteTests.TestSuite<MdastUtilCiteTests.TestToMd>): void {
+	context(contextMsg, () => {
+
+		let idx = 0;
+		for(let testCase of testSuite.cases) {
+			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}] ` + (testCase.description || "");
+			it(desc, () => {
+				// merge suite options with case options
+				let toMarkdownOptions = Object.assign({}, testSuite.options, testCase.options);
+
+				// markdown -> ast
+				const processor = unified()
+					.use(markdown)
+					.use(remarkStringify)
+					.use(remarkCitePlugin, { toMarkdown: toMarkdownOptions });
+
+				var serialized = processor.stringify(testCase.ast);
+
+				// check for match
+				assert.strictEqual(serialized.trim(), testCase.expected);
+			});
+		}
+	});
+}
+
+////////////////////////////////////////////////////////////
+
 // from markdown
-describe('remark-cite', () => {
+describe('remark-cite (fromMarkdown)', () => {
 
-	runTestSuite("pandoc syntax / single citation node", "pandoc-single", MdastUtilCiteTests.pandocSingleTestSuite);
-	runTestSuite("pandoc syntax / multiple citation nodes", "pandoc-multi", MdastUtilCiteTests.pandocMultiTestSuite);
-	runTestSuite("pandoc syntax / suppress author", "pandoc-suppress", MdastUtilCiteTests.pandocSuppressAuthorSuite);
+	runTestSuite_fromMarkdown("pandoc syntax / single citation node", "pandoc-single", MdastUtilCiteTests.pandocSingleTestSuite);
+	runTestSuite_fromMarkdown("pandoc syntax / multiple citation nodes", "pandoc-multi", MdastUtilCiteTests.pandocMultiTestSuite);
+	runTestSuite_fromMarkdown("pandoc syntax / suppress author", "pandoc-suppress", MdastUtilCiteTests.pandocSuppressAuthorSuite);
 
-	runTestSuite("alt syntax / single citation node", "alt-single", MdastUtilCiteTests.altSingleTestSuite);
-	runTestSuite("alt syntax / multiple citation nodes", "alt-multi", MdastUtilCiteTests.altMultiTestSuite);
-	runTestSuite("alt syntax / suppress author", "alt-suppress", MdastUtilCiteTests.altSuppressAuthorSuite);
+	runTestSuite_fromMarkdown("alt syntax / single citation node", "alt-single", MdastUtilCiteTests.altSingleTestSuite);
+	runTestSuite_fromMarkdown("alt syntax / multiple citation nodes", "alt-multi", MdastUtilCiteTests.altMultiTestSuite);
+	runTestSuite_fromMarkdown("alt syntax / suppress author", "alt-suppress", MdastUtilCiteTests.altSuppressAuthorSuite);
+
+});
+
+// to markdown
+describe('remark-cite (toMarkdown)', () => {
+
+	runTestSuite_toMarkdown("to markdown", "to-md", MdastUtilCiteTests.toMarkdownTestSuite);
 
 });

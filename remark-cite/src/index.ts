@@ -1,5 +1,5 @@
 import { citeSyntax, CiteSyntaxOptions } from "@benrbray/micromark-extension-cite";
-import { citeFromMarkdown, citeToMarkdown } from "@benrbray/mdast-util-cite";
+import { citeFromMarkdown, citeToMarkdown, CiteToMarkdownOptions } from "@benrbray/mdast-util-cite";
 
 ////////////////////////////////////////////////////////////
 
@@ -24,7 +24,9 @@ function remarkV13Warning(context: any): boolean {
 	return warningIssued;
 }
 
-export interface CitePluginOptions extends CiteSyntaxOptions {
+export interface CitePluginOptions {
+	syntax     : Partial<CiteSyntaxOptions>,
+	toMarkdown : Partial<CiteToMarkdownOptions>
 	// add extra options here, in addition to those for the syntax extension
 }
 
@@ -34,9 +36,9 @@ export function citePlugin(this: any, options: Partial<CitePluginOptions>) {
 	// warn for earlier versions
 	remarkV13Warning(this);
 
-	add('micromarkExtensions', citeSyntax(options));
+	add('micromarkExtensions', citeSyntax(options.syntax || {}));
 	add('fromMarkdownExtensions', citeFromMarkdown);
-	add('toMarkdownExtensions', citeToMarkdown);
+	add('toMarkdownExtensions', citeToMarkdown(options.toMarkdown || {}));
 
 	function add(field: string, value: any) {
 		if (data[field]) data[field].push(value)
