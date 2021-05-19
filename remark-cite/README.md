@@ -23,8 +23,17 @@ const markdown = require('remark-parse')
 const { citePlugin } = require('@benrbray/remark-cite');
 
 let defaultOptions = {
-	enableAltSyntax: false,
-	enablePandocSyntax: true,
+	syntax: {
+		// see micromark-extension-cite
+		enableAltSyntax: false,
+		enablePandocSyntax: true,
+	},
+	toMarkdown: {
+		// see mdast-util-cite
+		standardizeAltSyntax: false,
+		enableAuthorSuppression: true,
+		useNodeValue: false
+	}
 };
 
 let processor = unified()
