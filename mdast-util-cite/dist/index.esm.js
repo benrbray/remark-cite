@@ -303,13 +303,10 @@ function citeToMarkdown() {
     character: '@',
     inConstruct: ["citation"]
   }];
-  /** Returns an escaped representation of `node.value`. */
+  /** Replaces the citation node with `node.value`, without escaping. */
 
   function handler_useNodeValue(node, _, context) {
-    var exit = context.enter("citation");
-    var nodeValue = safe_1(context, node.value, {});
-    exit();
-    return nodeValue;
+    return node.value;
   }
   /** Reconstructs the citation using data attached to the `InlineCiteNode`. */
 

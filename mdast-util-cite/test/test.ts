@@ -3,6 +3,7 @@ import * as assert from 'assert';
 
 // mdast / unist
 import * as Uni from "unist";
+import * as Md from "mdast";
 import fromMarkdown from 'mdast-util-from-markdown';
 import toMarkdown from 'mdast-util-to-markdown';
 
@@ -390,6 +391,30 @@ export const toMarkdownTestCases: TestToMd[] = [
 			value: "garbage in, garbage out"
 		}
 	},{
+		description: "option: useNodeValue=true, pandoc syntax",
+		options: { useNodeValue: true },
+		expected: "[@peyton-jones2003]",
+		ast: {
+			type: "cite",
+			altSyntax: true,
+			data: {
+				citeItems: [ { key: "wadler1989" }, { key: "hughes2003" } ]
+			},
+			value: "[@peyton-jones2003]"
+		}
+	},{
+		description: "option: useNodeValue=true, alt syntax",
+		options: { useNodeValue: true },
+		expected: "@[peyton-jones2003; @wadler1999]",
+		ast: {
+			type: "cite",
+			altSyntax: true,
+			data: {
+				citeItems: [ { key: "wadler1989" }, { key: "hughes2003" } ]
+			},
+			value: "@[peyton-jones2003; @wadler1999]"
+		}
+	},{
 		description: "option: useNodeValue=false",
 		options: { useNodeValue: false },
 		expected: "[@wadler1989]",
@@ -572,8 +597,20 @@ function runTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuit
 				// merge suite options with case options
 				const options = Object.assign({}, testSuite.options, testCase.options);
 
+				// ast nodes will normally appear in paragraph
+				// context, which can affect symbol escaping
+				const paragraph: Uni.Parent = {
+					type: "paragraph",
+					children: [ testCase.ast ]
+				};
+
+				const root = {
+					type: "root",
+					children: [paragraph]
+				}
+
 				// markdown -> ast
-				const serialized = toMarkdown(testCase.ast, {
+				const serialized = toMarkdown(root, {
 					extensions: [mdastCiteExt.citeToMarkdown(options)]
 				});
 

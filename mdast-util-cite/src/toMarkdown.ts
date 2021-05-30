@@ -58,12 +58,9 @@ export function citeToMarkdown (options: Partial<CiteToMarkdownOptions> = {}) {
 		{ character: '@', inConstruct: ["citation"]    },
 	]
 
-	/** Returns an escaped representation of `node.value`. */
+	/** Replaces the citation node with `node.value`, without escaping. */
 	function handler_useNodeValue(node: InlineCiteNode, _:Uni.Parent|null|undefined, context: Context): string {
-		const exit = context.enter("citation");
-		const nodeValue = safe(context, node.value, {});
-		exit();
-		return nodeValue;
+		return node.value;
 	}
 
 	/** Reconstructs the citation using data attached to the `InlineCiteNode`. */
