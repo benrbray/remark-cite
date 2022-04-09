@@ -30,7 +30,7 @@ export interface CitePluginOptions {
 	// add extra options here, in addition to those for the syntax extension
 }
 
-export function citePlugin(this: any, options: Partial<CitePluginOptions>) {
+export default function citePlugin(this: any, options: Partial<CitePluginOptions> = {}) {
 	var data = this.data()
 
 	// warn for earlier versions
