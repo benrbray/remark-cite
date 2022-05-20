@@ -1,5 +1,5 @@
 // unified / unist / mdast/ remark
-import unified from 'unified';
+import {unified} from 'unified';
 import * as Uni from "unist";
 import markdown from 'remark-parse';
 import remark2markdown from 'remark-stringify';
@@ -19,11 +19,11 @@ import * as MdastUtilCiteTests from "../../mdast-util-cite/test/test";
 ////////////////////////////////////////////////////////////
 
 export function unistIsParent(node: Uni.Node): node is Uni.Parent {
-	return Boolean(node.children);
+	return Boolean((node as any).children);
 }
 
 export function unistIsStringLiteral(node: Uni.Node): node is Uni.Literal & { value: string } {
-	return (typeof node.value === "string");
+	return (typeof (node as any).value === "string");
 }
 
 ////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ function runTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuit
 					.use(remarkStringify)
 					.use(remarkCitePlugin, { toMarkdown: toMarkdownOptions });
 
-				var serialized = processor.stringify(testCase.ast);
+				var serialized = processor.stringify(testCase.ast as any) as unknown as string;
 
 				// check for match
 				assert.strictEqual(serialized.trim(), testCase.expected);

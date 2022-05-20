@@ -1,6 +1,6 @@
 import * as Uni from "unist";
-import { Token } from "micromark/dist/shared-types";
-import { MdastExtension } from "mdast-util-from-markdown/types";
+import { Token } from "micromark-util-types";
+import { Extension } from "mdast-util-from-markdown";
 
 ////////////////////////////////////////////////////////////
 
@@ -22,7 +22,7 @@ export interface InlineCiteNode extends Uni.Literal {
 
 ////////////////////////////////////////////////////////////
 
-export const citeFromMarkdown: MdastExtension = {
+export const citeFromMarkdown: Extension = {
 	enter : {
 		inlineCite: enterInlineCite,
 		citeItem: enterCiteItem
@@ -36,7 +36,7 @@ export const citeFromMarkdown: MdastExtension = {
 		citeItemKey: exitCiteItemKey,
 		citeItemSuffix: exitCiteItemSuffix
 	}
-} as MdastExtension;
+} as Extension;
 
 ////////////////////////////////////////////////////////////
 

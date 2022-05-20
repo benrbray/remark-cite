@@ -5,10 +5,10 @@ import { isEqual } from "lodash";
 console.log("hello, mocha!");
 
 // micromark
-import micromark from "micromark/lib";
+import {micromark} from "micromark";
 
 // project imports
-import { citeSyntax, CiteSyntaxOptions, citeHtml } from '..';
+import { citeSyntax, CiteSyntaxOptions, citeHtml } from '../src';
 
 ////////////////////////////////////////////////////////////
 
@@ -383,7 +383,7 @@ function runTestSuite(contextMsg: string, descPrefix:string, testSuite: TestSuit
 			it(desc, () => {
 				let options = Object.assign({}, testSuite.options, testCase.options);
 				let serialized = micromark(testCase.markdown, {
-					extensions: [citeSyntax(options)],
+					extensions: [citeSyntax(options) as any],
 					htmlExtensions: [citeHtml()]
 				});
 				assert.strictEqual(serialized, testCase.html);
