@@ -1,6 +1,6 @@
 // mdast
 import { Unsafe, Handle, Context } from "mdast-util-to-markdown";
-import safe from 'mdast-util-to-markdown/lib/util/safe.js';
+import { safe } from 'mdast-util-to-markdown/lib/util/safe';
 
 // unist
 import * as Uni from "unist";
@@ -81,12 +81,12 @@ export function citeToMarkdown (options: Partial<CiteToMarkdownOptions> = {}) {
 		const exit = context.enter('citation');
 		const safeItems = node.data.citeItems.map((item, idx) => {
 			const exitKey = context.enter("citationKey");
-			const key = safe(context, item.key, { before: "@" });
+			const key = safe(context, item.key, { before: "@", after: "", encode: [], now: {column:0, line:0}, lineShift: 0 });
 			exitKey();
 
 			// be careful not to include a prefix for the first tiem when using alternative syntax 
-			const prefix = (item.prefix && (!useAltSyntax || idx > 0)) ? safe(context, item.prefix, {}) : "";
-			const suffix = item.suffix ? safe(context, item.suffix, {}) : "";
+			const prefix = (item.prefix && (!useAltSyntax || idx > 0)) ? safe(context, item.prefix, {before: "", after: "", encode: [], now: {column:0, line:0}, lineShift: 0}) : "";
+			const suffix = item.suffix ? safe(context, item.suffix, {before: "", after: "", encode: [], now: {column:0, line:0}, lineShift: 0}) : "";
 			const suppress = (settings.enableAuthorSuppression && item.suppressAuthor === true) ? "-" : "";
 
 			if(idx === 0) {

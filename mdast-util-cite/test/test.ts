@@ -4,24 +4,24 @@ import * as assert from 'assert';
 // mdast / unist
 import * as Uni from "unist";
 import * as Md from "mdast";
-import fromMarkdown from 'mdast-util-from-markdown';
-import toMarkdown from 'mdast-util-to-markdown';
+import {fromMarkdown} from 'mdast-util-from-markdown';
+import {toMarkdown} from 'mdast-util-to-markdown';
 
 ////////////////////////////////////////////////////////////
 
 // project imports
 import { citeSyntax, CiteSyntaxOptions } from '@benrbray/micromark-extension-cite'
-import { CiteItem, CiteToMarkdownOptions, InlineCiteNode } from "..";
-import * as mdastCiteExt from "..";
+import { CiteItem, CiteToMarkdownOptions, InlineCiteNode } from "../src";
+import * as mdastCiteExt from "../src";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export function unistIsParent(node: Uni.Node): node is Uni.Parent {
-	return Boolean(node.children);
+	return Boolean((node as any).children);
 }
 
 export function unistIsStringLiteral(node: Uni.Node): node is Uni.Literal & { value: string } {
-	return (typeof node.value === "string");
+	return (typeof (node as any).value === "string");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -394,26 +394,26 @@ export const toMarkdownTestCases: TestToMd[] = [
 		description: "option: useNodeValue=true, pandoc syntax",
 		options: { useNodeValue: true },
 		expected: "[@peyton-jones2003]",
-		ast: {
+		ast: ({
 			type: "cite",
 			altSyntax: true,
 			data: {
 				citeItems: [ { key: "wadler1989" }, { key: "hughes2003" } ]
 			},
 			value: "[@peyton-jones2003]"
-		}
+		} as InlineCiteNode)
 	},{
 		description: "option: useNodeValue=true, alt syntax",
 		options: { useNodeValue: true },
 		expected: "@[peyton-jones2003; @wadler1999]",
-		ast: {
+		ast: ({
 			type: "cite",
 			altSyntax: true,
 			data: {
 				citeItems: [ { key: "wadler1989" }, { key: "hughes2003" } ]
 			},
 			value: "@[peyton-jones2003; @wadler1999]"
-		}
+		} as InlineCiteNode)
 	},{
 		description: "option: useNodeValue=false",
 		options: { useNodeValue: false },
@@ -562,7 +562,7 @@ function runTestSuite_fromMarkdown(contextMsg: string, descPrefix:string, testSu
 
 				// markdown -> ast
 				const ast = fromMarkdown(testCase.markdown, {
-					extensions: [citeSyntax(options)],
+					extensions: [(citeSyntax(options) as any)],
 					mdastExtensions: [
 						mdastCiteExt.citeFromMarkdown
 					]
@@ -610,7 +610,7 @@ function runTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuit
 				}
 
 				// markdown -> ast
-				const serialized = toMarkdown(root, {
+				const serialized = toMarkdown((root as any), {
 					extensions: [mdastCiteExt.citeToMarkdown(options)]
 				});
 
