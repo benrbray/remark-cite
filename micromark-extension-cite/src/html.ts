@@ -1,4 +1,4 @@
-import { Token } from "micromark/dist/shared-types";
+import { Token } from "micromark-util-types";
 
 ////////////////////////////////////////////////////////////
 

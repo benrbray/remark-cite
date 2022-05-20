@@ -1,7 +1,5 @@
 // micromark
-import { State, Effects, Resolve, Tokenizer, Event, Token } from "micromark/dist/shared-types";
-import * as MM from "micromark/dist/shared-types";
-import { CodeAsKey } from "micromark/lib/shared-types";
+import { State, Effects, Resolver, Tokenizer, Token, Code } from "micromark-util-types";
 
 // html converts token stream directly to html
 export { citeHtml } from "./html"; 
@@ -33,9 +31,9 @@ interface Construct {
 	name?: string
 	tokenize: Tokenize
 	partial?: boolean
-	resolve?: Resolve
-	resolveTo?: Resolve
-	resolveAll?: Resolve
+	resolve?: Resolver
+	resolveTo?: Resolver
+	resolveAll?: Resolver
 	concrete?: boolean
 	interruptible?: boolean
 	lazy?: boolean
@@ -72,10 +70,10 @@ interface TypeSafeEffects<T extends string> {
     constructInfo:
       | Construct
       | Construct[]
-      | Record<CodeAsKey, Construct | Construct[]>,
+      | Record<string, Construct | Construct[]>,
     returnState: State,
     bogusState?: State
-  ) => (code: number|null) => void
+  ) => (code: Code) => void
 
   /**
    * Interrupt is used for stuff right after a line of content.
@@ -84,18 +82,18 @@ interface TypeSafeEffects<T extends string> {
     constructInfo:
       | Construct
       | Construct[]
-      | Record<CodeAsKey, Construct | Construct[]>,
-    ok: MM.Okay,
-    nok?: MM.NotOkay
+      | Record<number, Construct | Construct[]>,
+    ok: State,
+    nok?: State|undefined
   ) => (code: number|null) => void
 
   check: (
     constructInfo:
       | Construct
       | Construct[]
-      | Record<CodeAsKey, Construct | Construct[]>,
-    ok: MM.Okay,
-    nok?: MM.NotOkay
+      | Record<string, Construct | Construct[]>,
+    ok: State,
+    nok?: State|undefined
   ) => (code: number|null) => void
 
   /**
@@ -105,9 +103,9 @@ interface TypeSafeEffects<T extends string> {
     constructInfo:
       | Construct
       | Construct[]
-      | Record<CodeAsKey, Construct | Construct[]>,
-    ok: MM.Okay,
-    nok?: MM.NotOkay
+      | Record<string, Construct | Construct[]>,
+    ok: State,
+    nok?: State|undefined
   ) => void
 }
 
@@ -162,7 +160,7 @@ export const citeSyntax = (function (options?: Partial<CiteSyntaxOptions>): Synt
 
 	// assemble extension
 	return { text };
-}) as (options: Partial<CiteSyntaxOptions>) => MM.SyntaxExtension;
+}) as (options: Partial<CiteSyntaxOptions>) => SyntaxExtension;
 
 ////////////////////////////////////////////////////////////
 
@@ -172,14 +170,14 @@ const lookaheadConstruct = {
 	tokenize(effects: Effects, ok: State, nok: State): State {
 		return start
 
-		function start(code: number) {
+		function start(code: Code) {
 			// match hyphen `-`
 			if(code !== 45) { return nok(code); }
 			effects.consume(code);
 			return lookaheadAt;
 		}
 
-		function lookaheadAt(code: number) {
+		function lookaheadAt(code: Code) {
 			// match at symbol `@`
 			if(code !== 64) { return nok(code); }
 			effects.consume(code);
@@ -232,7 +230,7 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 
 	// -- pandoc syntax --------------------------------- //
 
-	function start_pandoc(code: number): State | void {
+	function start_pandoc(code: Code): State | void {
 		// match left square bracket `[`
 		if (code === 91) { 
 			effects.enter(CiteToken.inlineCite);
@@ -249,7 +247,7 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 
 	// -- alternative syntax ---------------------------- //
 
-	function start_alt(code: number): State | void {
+	function start_alt(code: Code): State | void {
 		// match at symbol `@`
 		if (code === 64) {
 			effects.enter(CiteToken.inlineCite);
@@ -266,7 +264,7 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 	/*
 	 * (Alternative Syntax) See `enableAltSyntax` option.
 	 */
-	function alt_consumeLeftBracket(code: number): State | void {
+	function alt_consumeLeftBracket(code: Code): State | void {
 		// match left square bracket `[`
 		if (code === 91) { 
 			// consume bracket
@@ -287,7 +285,7 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 	 * (alt syntax) look for a hyphen in the first citation item, as in
 	 *     `@[-suppressed]`
 	 */
-	function alt_consumeInitialHyphen(code: number): State | void {
+	function alt_consumeInitialHyphen(code: Code): State | void {
 		// match hyphen `-`, indicating author suppression
 		if(code === 45) {
 			effects.enter(CiteToken.citeAuthorSuppress);
@@ -308,7 +306,7 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 	/**
 	 * @precondition token `citeItem` has already been emitted
 	 */
-	function consumeCiteItem(code: number): State | void {
+	function consumeCiteItem(code: Code): State | void {
 		// we haven't found any content yet
 		parseState.nonEmptyKey = false;
 		effects.enter(CiteToken.citeItem);
@@ -329,7 +327,7 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 	 * @precondition `parseState.inPrefix = true`
 	 * @precondition token `citeItemPrefix` has already been emitted
 	 */
-	function consumeCiteItemPrefix(this: any, code: number): State | void {
+	function consumeCiteItemPrefix(this: any, code: Code): State | void {
 		// match hyphen '-', possibly indicating author suppression
 		if (code === 45) { return lookaheadAuthorSuppress(code); }
 		// match at symbol `@`, indicating end of prefix
@@ -349,7 +347,7 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 	 * to determine whether the hyphen indicates author suppression or is
 	 * simply part of the citation prefix.
 	 */
-	function lookaheadAuthorSuppress(this: any, code: number): State | void {
+	function lookaheadAuthorSuppress(this: any, code: Code): State | void {
 		// match hyphen `-`
 		if(code !== 45) { return nok(code); }
 		// lookahead
@@ -367,14 +365,14 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 	 * Consumes a single character in prefix mode.
 	 * @effect starts prefix mode if we weren't already in it
 	 */
-	function consumeSingleCharInPrefix(this: any, code: number): State | void {
+	function consumeSingleCharInPrefix(this: any, code: Code): State | void {
 		// make sure we are in prefix mode
 		if(!parseState.inPrefix) {
 			effects.enter(CiteToken.citeItemPrefix);
 			parseState.inPrefix = true;
 		}
 
-		effects.consume(code);
+		effects.consume(code as number);
 		return consumeCiteItemPrefix;
 	}
 
@@ -382,7 +380,7 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 	 * @precondition We already KNOW the next TWO characters are `-@`.
 	 *     (called by `lookaheadAuthorSuppress`)
 	 */
-	function consumeAuthorSuppress(this: any, code: number): State | void {
+	function consumeAuthorSuppress(this: any, code: Code): State | void {
 		// match hyphen `-`
 		if(code !== 45) { return nok(code); }
 
@@ -401,7 +399,7 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 		return consumeAtSymbol;
 	}
 	
-	function consumeAtSymbol(this: any, code: number): State | void {
+	function consumeAtSymbol(this: any, code: Code): State | void {
 		// match at symbol `@`
 		if(code !== 64) { return nok(code); }
 
@@ -422,7 +420,7 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 		return consumeCiteItemKey;
 	}
 
-	function consumeCiteItemKey(code: number): State | void {
+	function consumeCiteItemKey(code: Code): State | void {
 		// pandoc is specific about which characters are allowed
 		// in a citation key, but since javascript has no multi-
 		// lingual way to test for alphanumeric characters, we
@@ -480,7 +478,7 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 		return consumeCiteItemKey;
 	}
 
-	function consumeCiteItemSuffix(code: number): State | void {
+	function consumeCiteItemSuffix(code: Code): State | void {
 		// fail on eof
 		if (code === null) { return nok(code); }
 
@@ -512,7 +510,7 @@ const citeTokenize: (altSyntax: boolean) => Tokenize = (altSyntax) => function(t
 		return consumeCiteItemSuffix;
 	}
 
-	function consumeCiteEnd(code: number): State | void {
+	function consumeCiteEnd(code: Code): State | void {
 		// match right square bracket `]`
 		if (code !== 93) { return nok(code); }
 		
