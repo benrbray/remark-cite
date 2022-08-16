@@ -162,7 +162,7 @@ export const citeSyntax = (function (options?: Partial<CiteSyntaxOptions>): Synt
 
 	// assemble extension
 	return { text };
-}) as (options: Partial<CiteSyntaxOptions>) => MM.SyntaxExtension;
+}) as (options?: Partial<CiteSyntaxOptions>) => MM.SyntaxExtension;
 
 ////////////////////////////////////////////////////////////
 
