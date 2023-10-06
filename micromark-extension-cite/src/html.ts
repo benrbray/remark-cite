@@ -27,13 +27,13 @@ export function citeHtml(this: any, opts: CiteHtmlOptions = {}) {
 	// ---- inlineCite ---------------------------------- //
 
 	function enterInlineCite(this:any): void {
-		let stack: StackType|undefined = this.getData('inlineCiteStack');
-		if (!stack) this.setData('inlineCiteStack', (stack = []));
+		let stack: StackType|undefined = this.data.inlineCiteStack;
+		if (!stack) this.data.inlineCiteStack = stack = [];
 		stack.push({ items: [] });
 	}
 
 	function exitInlineCite(this:any, token: Token): void {
-		const inlineCite: CiteItemInfo = this.getData('inlineCiteStack').pop();
+		const inlineCite: CiteItemInfo = this.data.inlineCiteStack.pop();
 
 		// gather citation data
 		const classNames = "citation";
@@ -51,7 +51,7 @@ export function citeHtml(this: any, opts: CiteHtmlOptions = {}) {
 
 	function exitCiteItemKey(this:any, token: Token): void {
 		const citeKey = this.sliceSerialize(token);
-		const stack: StackType = this.getData('inlineCiteStack');
+		const stack: StackType = this.data.inlineCiteStack;
 
 		const current = top(stack);
 		current.items.push({ key: citeKey });

@@ -53,7 +53,8 @@ function enterInlineCite(token) {
 }
 
 function exitInlineCite(token) {
-  var citeNode = this.exit(token);
+  var citeNode = top(this.stack);
+  this.exit(token);
   citeNode.value = this.sliceSerialize(token);
 } // inlineCiteMarker_alt ------------------------------------
 
