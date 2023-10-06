@@ -75,7 +75,8 @@ function enterInlineCite(this: any, token: unknown) {
 }
 
 function exitInlineCite(this: any, token: unknown) {
-	let citeNode: InlineCiteNode = this.exit(token);
+	let citeNode: InlineCiteNode = top(this.stack);
+	this.exit(token);
 	citeNode.value = this.sliceSerialize(token);
 }
 

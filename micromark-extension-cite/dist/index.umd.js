@@ -12,15 +12,15 @@ function citeHtml() {
 
   // ---- inlineCite ---------------------------------- //
   function enterInlineCite() {
-    var stack = this.getData('inlineCiteStack');
-    if (!stack) this.setData('inlineCiteStack', stack = []);
+    var stack = this.data.inlineCiteStack;
+    if (!stack) this.data.inlineCiteStack = stack = [];
     stack.push({
       items: []
     });
   }
 
   function exitInlineCite(token) {
-    var inlineCite = this.getData('inlineCiteStack').pop(); // gather citation data
+    var inlineCite = this.data.inlineCiteStack.pop(); // gather citation data
 
     var classNames = "citation";
     var citeItems = (inlineCite === null || inlineCite === void 0 ? void 0 : inlineCite.items) || [];
@@ -37,7 +37,7 @@ function citeHtml() {
 
   function exitCiteItemKey(token) {
     var citeKey = this.sliceSerialize(token);
-    var stack = this.getData('inlineCiteStack');
+    var stack = this.data.inlineCiteStack;
     var current = top(stack);
     current.items.push({
       key: citeKey
