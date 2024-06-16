@@ -1,16 +1,57 @@
 {
-  "name": "remark-cite",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@benrbray/micromark-extension-cite",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": false,
+  "description": "Micromark syntax extension for pandoc-style citations.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benrbray/remark-cite.git",
+    "directory": "micromark-extension-cite"
+  },
+  "keywords": [
+    "markdown",
+    "pandoc",
+    "citations",
+    "bibliography",
+    "remark",
+    "remark-plugin",
+    "micromark",
+    "micromark-plugin",
+    "micromark-extension"
+  ],
+  "author": {
+    "name": "Benjamin R. Bray",
+    "url": "https://benrbray.com/"
+  },
   "type": "module",
+  "exports": {
+    ".": "./dist/micromark-extension-cite.js"
+  },
+  "types": "dist/micromark-extension-cite.d.ts",
+  "files": [
+    "dist",
+    "lib"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "clean": "npx del dist",
+    "prepare": "npm run clean; npm run build",
+    "pretest": "npm run clean; npm run build",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "peerDependencies": {
+    "micromark": "^4.0.0"
   },
   "devDependencies": {
+    "del-cli": "^5.1.0",
+    "micromark-util-types": "^2.0.0",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
-    "vite-tsconfig-paths": "^4.3.2"
+    "vite-plugin-dts": "^3.9.1",
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^1.6.0"
   }
 }

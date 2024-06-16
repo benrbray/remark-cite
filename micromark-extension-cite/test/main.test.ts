@@ -1,14 +1,12 @@
 // testing
 import assert from "assert";
-import { isEqual } from "lodash";
-
-console.log("hello, mocha!");
+import { describe, test } from "vitest";
 
 // micromark
-import micromark from "micromark/lib";
+import { micromark, type Options } from "micromark";
 
 // project imports
-import { citeSyntax, CiteSyntaxOptions, citeHtml } from '..';
+import { citeSyntax, CiteSyntaxOptions, citeHtml } from '../lib/main';
 
 ////////////////////////////////////////////////////////////
 
@@ -374,18 +372,19 @@ const syntaxConflictSuite: TestSuite = {
 
 ////////////////////////////////////////////////////////////
 
-function runTestSuite(contextMsg: string, descPrefix:string, testSuite: TestSuite): void {
-	context(contextMsg, () => {
+function declareTestSuite(contextMsg: string, descPrefix:string, testSuite: TestSuite): void {
+	describe(contextMsg, () => {
 
 		let idx = 0;
 		for(let testCase of testSuite.cases) {
 			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}] ` + (testCase.description || "");
-			it(desc, () => {
+			test(desc, () => {
 				let options = Object.assign({}, testSuite.options, testCase.options);
-				let serialized = micromark(testCase.markdown, {
+				let config: Options = {
 					extensions: [citeSyntax(options)],
 					htmlExtensions: [citeHtml()]
-				});
+				}
+				let serialized = micromark(testCase.markdown, config);
 				assert.strictEqual(serialized, testCase.html);
 			});
 		}
@@ -394,15 +393,11 @@ function runTestSuite(contextMsg: string, descPrefix:string, testSuite: TestSuit
 
 ////////////////////////////////////////////////////////////
 
-describe('micromark-extension-cite', () => {
+declareTestSuite("matches pandoc html5 output", "pandoc-match", pandocMatchSuite);
+declareTestSuite("expected deviations from pandoc html5 output", "pandoc-except", pandocExceptSuite);
+declareTestSuite("test interactions with markdown syntax", "syntax-conflict", syntaxConflictSuite);
 
-	runTestSuite("matches pandoc html5 output", "pandoc-match", pandocMatchSuite);
-	runTestSuite("expected deviations from pandoc html5 output", "pandoc-except", pandocExceptSuite);
-	runTestSuite("test interactions with markdown syntax", "syntax-conflict", syntaxConflictSuite);
+declareTestSuite("alternate citation syntax", "alt-syntax", altSyntaxSuite);
 
-	runTestSuite("alternate citation syntax", "alt-syntax", altSyntaxSuite);
-
-	runTestSuite("options { enableAltSyntax: false }", "no-alt", noAltSuite);
-	runTestSuite("options { enablePandocSyntax: false }", "no-pandoc", noPandocSuite);
-	
-})
+declareTestSuite("options { enableAltSyntax: false }", "no-alt", noAltSuite);
+declareTestSuite("options { enablePandocSyntax: false }", "no-pandoc", noPandocSuite);

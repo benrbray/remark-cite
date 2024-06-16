@@ -1,4 +1,4 @@
-import { Token } from "micromark/dist/shared-types";
+import type { Token } from "micromark-util-types";
 
 ////////////////////////////////////////////////////////////
 
@@ -24,15 +24,18 @@ export type CiteHtmlOptions = {};
  */
 export function citeHtml(this: any, opts: CiteHtmlOptions = {}) {
 
+	// @ts-ignore (opts is just a placeholder for now)
+	const _opts = opts;
+
 	// ---- inlineCite ---------------------------------- //
 
-	function enterInlineCite(this:any): void {
+	function enterInlineCite(this:any): undefined {
 		let stack: StackType|undefined = this.getData('inlineCiteStack');
 		if (!stack) this.setData('inlineCiteStack', (stack = []));
 		stack.push({ items: [] });
 	}
 
-	function exitInlineCite(this:any, token: Token): void {
+	function exitInlineCite(this:any, token: Token): undefined {
 		const inlineCite: CiteItemInfo = this.getData('inlineCiteStack').pop();
 
 		// gather citation data
@@ -49,7 +52,7 @@ export function citeHtml(this: any, opts: CiteHtmlOptions = {}) {
 
 	// ---- citeItemKey --------------------------------- //
 
-	function exitCiteItemKey(this:any, token: Token): void {
+	function exitCiteItemKey(this:any, token: Token): undefined {
 		const citeKey = this.sliceSerialize(token);
 		const stack: StackType = this.getData('inlineCiteStack');
 

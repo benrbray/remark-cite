@@ -2,10 +2,13 @@
 import { resolve } from 'path'
 import { defineConfig } from 'vite';
 import tsConfigPaths from 'vite-tsconfig-paths'
+import dts from 'vite-plugin-dts';
+import pkg from "./package.json";
 
 export default defineConfig({
   plugins: [
-    tsConfigPaths()
+    tsConfigPaths(),
+    dts({ rollupTypes: true }),
   ],
   build: {
     lib: {
@@ -13,8 +16,13 @@ export default defineConfig({
       entry: resolve(__dirname, 'lib/main.ts')
     },
     rollupOptions: {
-      // make sure to externalize deps that shouldn't be bundled
-      external: [],
+      // dependencies will be installed by the consumer,
+      // so tell rollup not to bundle them with the package
+      external: [
+        // ...Object.keys(pkg.dependencies || {}),
+        ...Object.keys(pkg.peerDependencies || {}),
+        ...Object.keys(pkg.devDependencies || {}),
+      ],
     },
   },
 })
