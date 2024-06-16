@@ -12,16 +12,15 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
 
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-
-    "paths" : {
-      "@lib/*" : ["./lib/*"]
-    }
+    "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "lib"]
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

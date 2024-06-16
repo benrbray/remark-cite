@@ -1,0 +1,3 @@
+packages:
+  - "remark-cite"
+  - "rehype-cite"
