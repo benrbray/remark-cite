@@ -1,3 +1,5 @@
 packages:
   - "remark-cite"
   - "rehype-cite"
+  - "mdast-util-cite"
+  - "micromark-extension-cite"

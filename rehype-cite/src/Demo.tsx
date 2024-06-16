@@ -1,6 +1,5 @@
 import { createSignal } from "solid-js";
 
-import remark from "remark";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeSanitize from "rehype-sanitize";
@@ -16,6 +15,11 @@ const processor = unified()
   .use(rehypeStringify);
 
 const markdown2html = (markdown: string): string => {
+  const mdast = processor.parse(markdown);
+  const hast  = processor.runSync(mdast);
+
+  console.log(hast);
+
   return processor.processSync(markdown).toString()
 }
 
