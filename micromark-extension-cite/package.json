@@ -36,9 +36,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "clean": "npx del dist",
-    "prepare": "npm run clean; npm run build",
-    "pretest": "npm run clean; npm run build",
+    "clean": "pnpm del dist",
+    "prepare": "pnpm run clean; pnpm run build",
+    "pretest": "pnpm run clean; pnpm run build",
     "preview": "vite preview",
     "test": "vitest"
   },
