@@ -1,6 +1,6 @@
 import * as Uni from "unist";
-import { Token } from "micromark/dist/shared-types";
-import { MdastExtension } from "mdast-util-from-markdown/types";
+import type { Token } from "micromark-util-types";
+import { Extension } from "mdast-util-from-markdown";
 
 ////////////////////////////////////////////////////////////
 
@@ -20,9 +20,20 @@ export interface InlineCiteNode extends Uni.Literal {
 	}
 }
 
+// add citation node types to tree
+declare module 'mdast' {
+  interface PhrasingContentMap {
+    inlineCiteNode: InlineCiteNode
+  }
+
+  interface RootContentMap {
+    inlineCiteNode: InlineCiteNode
+  }
+}
+
 ////////////////////////////////////////////////////////////
 
-export const citeFromMarkdown: MdastExtension = {
+export const citeFromMarkdown: Extension = {
 	enter : {
 		inlineCite: enterInlineCite,
 		citeItem: enterCiteItem
@@ -36,7 +47,7 @@ export const citeFromMarkdown: MdastExtension = {
 		citeItemKey: exitCiteItemKey,
 		citeItemSuffix: exitCiteItemSuffix
 	}
-} as MdastExtension;
+};
 
 ////////////////////////////////////////////////////////////
 
@@ -75,14 +86,15 @@ function enterInlineCite(this: any, token: unknown) {
 }
 
 function exitInlineCite(this: any, token: unknown) {
-	let citeNode: InlineCiteNode = this.exit(token);
+	let citeNode: InlineCiteNode = top(this.stack);
+	this.exit(token);
 	citeNode.value = this.sliceSerialize(token);
 }
 
 // inlineCiteMarker_alt ------------------------------------
 
 /** Only appears when alternate syntax is used. */
-function exitInlineCiteMarker_alt(this: any, token: unknown) {
+function exitInlineCiteMarker_alt(this: any, _token: unknown) {
 	const currentNode = top(this.stack) as InlineCiteNode;
 	// @ts-ignore: create invalid citeItem, to be filled later
 	currentNode.data.altSyntax = true;
@@ -90,7 +102,7 @@ function exitInlineCiteMarker_alt(this: any, token: unknown) {
 
 // -- citeItem ---------------------------------------------
 
-function enterCiteItem(this: any, token: Token) {
+function enterCiteItem(this: any, _token: Token) {
 	const currentNode = top(this.stack) as InlineCiteNode;
 	// @ts-ignore: create invalid citeItem, to be filled later
 	currentNode.data.citeItems.push({ });
@@ -99,13 +111,13 @@ function enterCiteItem(this: any, token: Token) {
 function exitCiteItem(this: any, token: Token) {
 	//let item = this.exit(token);
 	const currentNode = top(this.stack) as InlineCiteNode;
-	const currentItem = top(currentNode.data.citeItems);
-	const citeSrc = this.sliceSerialize(token);
+	/*const _currentItem =*/ top(currentNode.data.citeItems);
+	/*const _citeSrc =*/ this.sliceSerialize(token);
 }
 
 // -- citeAuthorSuppresss ----------------------------------
 
-function exitCiteAuthorSuppress(this: any, token: Token) {
+function exitCiteAuthorSuppress(this: any, _token: Token) {
 	const currentNode = top(this.stack) as InlineCiteNode;
 	const currentItem = top(currentNode.data.citeItems);
 

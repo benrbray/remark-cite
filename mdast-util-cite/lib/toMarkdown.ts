@@ -1,12 +1,22 @@
 // mdast
-import { Unsafe, Handle, Context } from "mdast-util-to-markdown";
-import safe from 'mdast-util-to-markdown/lib/util/safe.js';
+import type { Unsafe, Handle, State } from "mdast-util-to-markdown";
+// import safe from 'mdast-util-to-markdown/lib/util/safe.js';
 
 // unist
 import * as Uni from "unist";
 
 // project imports
 import { InlineCiteNode } from './fromMarkdown';
+
+////////////////////////////////////////////////////////////
+
+// Add custom data tracked to turn a tree into markdown.
+declare module 'mdast-util-to-markdown' {
+  interface ConstructNameMap {
+    citation: 'citation'
+    citationKey: 'citationKey'
+  }
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -59,12 +69,12 @@ export function citeToMarkdown (options: Partial<CiteToMarkdownOptions> = {}) {
 	]
 
 	/** Replaces the citation node with `node.value`, without escaping. */
-	function handler_useNodeValue(node: InlineCiteNode, _:Uni.Parent|null|undefined, context: Context): string {
+	const handler_useNodeValue: Handle = function(node: InlineCiteNode, _:Uni.Parent|null|undefined, _context: State): string {
 		return node.value;
 	}
 
 	/** Reconstructs the citation using data attached to the `InlineCiteNode`. */
-	function handler_default(node: InlineCiteNode, _:Uni.Parent|null|undefined, context: Context): string {
+	const handler_default: Handle = function(node: InlineCiteNode, _:Uni.Parent|null|undefined, context: State): string {
 		// handle missing items
 		if(node.data.citeItems.length === 0) {
 			return "";
@@ -81,12 +91,12 @@ export function citeToMarkdown (options: Partial<CiteToMarkdownOptions> = {}) {
 		const exit = context.enter('citation');
 		const safeItems = node.data.citeItems.map((item, idx) => {
 			const exitKey = context.enter("citationKey");
-			const key = safe(context, item.key, { before: "@" });
+			const key = item.key; // TODO (Ben @ 2024/06/16) was `context.safe(item.key, { before: "@" });`
 			exitKey();
 
 			// be careful not to include a prefix for the first tiem when using alternative syntax 
-			const prefix = (item.prefix && (!useAltSyntax || idx > 0)) ? safe(context, item.prefix, {}) : "";
-			const suffix = item.suffix ? safe(context, item.suffix, {}) : "";
+			const prefix = (item.prefix && (!useAltSyntax || idx > 0)) ? item.prefix : ""; // TODO (Ben @ 2024/06/16) was `context.safe(item.prefix, {})`
+			const suffix = item.suffix || "";                                              // TODO (Ben @ 2024/06/16) was `context.safe(item.suffix, {})`
 			const suppress = (settings.enableAuthorSuppression && item.suppressAuthor === true) ? "-" : "";
 
 			if(idx === 0) {

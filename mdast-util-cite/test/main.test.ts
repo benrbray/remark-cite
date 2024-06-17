@@ -1,27 +1,28 @@
-// // testing
-import * as assert from 'assert';
+// testing
+import assert from "assert";
+import { describe, test } from "vitest";
 
 // mdast / unist
 import * as Uni from "unist";
 import * as Md from "mdast";
-import fromMarkdown from 'mdast-util-from-markdown';
-import toMarkdown from 'mdast-util-to-markdown';
+import { fromMarkdown } from 'mdast-util-from-markdown';
+import { toMarkdown } from 'mdast-util-to-markdown';
 
 ////////////////////////////////////////////////////////////
 
 // project imports
 import { citeSyntax, CiteSyntaxOptions } from '@benrbray/micromark-extension-cite'
-import { CiteItem, CiteToMarkdownOptions, InlineCiteNode } from "..";
-import * as mdastCiteExt from "..";
+import { CiteToMarkdownOptions, InlineCiteNode } from "../lib/main";
+import * as mdastCiteExt from "../lib/main";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export function unistIsParent(node: Uni.Node): node is Uni.Parent {
-	return Boolean(node.children);
+	return Boolean((node as Uni.Parent).children);
 }
 
 export function unistIsStringLiteral(node: Uni.Node): node is Uni.Literal & { value: string } {
-	return (typeof node.value === "string");
+	return (typeof (node as Uni.Literal).value === "string");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -396,8 +397,8 @@ export const toMarkdownTestCases: TestToMd[] = [
 		expected: "[@peyton-jones2003]",
 		ast: {
 			type: "cite",
-			altSyntax: true,
 			data: {
+				altSyntax: true,
 				citeItems: [ { key: "wadler1989" }, { key: "hughes2003" } ]
 			},
 			value: "[@peyton-jones2003]"
@@ -408,8 +409,8 @@ export const toMarkdownTestCases: TestToMd[] = [
 		expected: "@[peyton-jones2003; @wadler1999]",
 		ast: {
 			type: "cite",
-			altSyntax: true,
 			data: {
+				altSyntax: true,
 				citeItems: [ { key: "wadler1989" }, { key: "hughes2003" } ]
 			},
 			value: "@[peyton-jones2003; @wadler1999]"
@@ -550,13 +551,13 @@ export const toMarkdownTestSuite: TestSuite<TestToMd> = {
 
 ////////////////////////////////////////////////////////////
 
-function runTestSuite_fromMarkdown(contextMsg: string, descPrefix:string, testSuite: TestSuite<TestFromMd>): void {
-	context(contextMsg, () => {
+function declareTestSuite_fromMarkdown(contextMsg: string, descPrefix:string, testSuite: TestSuite<TestFromMd>): void {
+	describe(`[fromMarkdown] ${contextMsg}`, () => {
 
 		let idx = 0;
 		for(let testCase of testSuite.cases) {
 			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}] ` + (testCase.description || "");
-			it(desc, () => {
+			test(desc, () => {
 				// merge suite options with case options
 				const options = Object.assign({}, testSuite.options, testCase.options);
 
@@ -587,30 +588,25 @@ function runTestSuite_fromMarkdown(contextMsg: string, descPrefix:string, testSu
 
 ////////////////////////////////////////////////////////////
 
-function runTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuite: TestSuite<TestToMd>): void {
-	context(contextMsg, () => {
+function declareTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuite: TestSuite<TestToMd>): void {
+	describe(`[toMarkdown] ${contextMsg}`, () => {
 
 		let idx = 0;
 		for(let testCase of testSuite.cases) {
 			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}] ` + (testCase.description || "");
-			it(desc, () => {
+			test(desc, () => {
 				// merge suite options with case options
 				const options = Object.assign({}, testSuite.options, testCase.options);
 
 				// ast nodes will normally appear in paragraph
 				// context, which can affect symbol escaping
-				const paragraph: Uni.Parent = {
+				const paragraph: Md.Paragraph = {
 					type: "paragraph",
 					children: [ testCase.ast ]
 				};
 
-				const root = {
-					type: "root",
-					children: [paragraph]
-				}
-
 				// markdown -> ast
-				const serialized = toMarkdown(root, {
+				const serialized = toMarkdown(paragraph, {
 					extensions: [mdastCiteExt.citeToMarkdown(options)]
 				});
 
@@ -624,21 +620,13 @@ function runTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuit
 ////////////////////////////////////////////////////////////
 
 // from markdown
-describe('mdast-util-cite (fromMarkdown)', () => {
+declareTestSuite_fromMarkdown("pandoc syntax / single citation node", "pandoc-single", pandocSingleTestSuite);
+declareTestSuite_fromMarkdown("pandoc syntax / multiple citation nodes", "pandoc-multi", pandocMultiTestSuite);
+declareTestSuite_fromMarkdown("pandoc syntax / suppress author", "pandoc-suppress", pandocSuppressAuthorSuite);
 
-	runTestSuite_fromMarkdown("pandoc syntax / single citation node", "pandoc-single", pandocSingleTestSuite);
-	runTestSuite_fromMarkdown("pandoc syntax / multiple citation nodes", "pandoc-multi", pandocMultiTestSuite);
-	runTestSuite_fromMarkdown("pandoc syntax / suppress author", "pandoc-suppress", pandocSuppressAuthorSuite);
-
-	runTestSuite_fromMarkdown("alt syntax / single citation node", "alt-single", altSingleTestSuite);
-	runTestSuite_fromMarkdown("alt syntax / multiple citation nodes", "alt-multi", altMultiTestSuite);
-	runTestSuite_fromMarkdown("alt syntax / suppress author", "alt-suppress", altSuppressAuthorSuite);
-
-});
+declareTestSuite_fromMarkdown("alt syntax / single citation node", "alt-single", altSingleTestSuite);
+declareTestSuite_fromMarkdown("alt syntax / multiple citation nodes", "alt-multi", altMultiTestSuite);
+declareTestSuite_fromMarkdown("alt syntax / suppress author", "alt-suppress", altSuppressAuthorSuite);
 
 // to markdown
-describe('mdast-util-cite (toMarkdown)', () => {
-
-	runTestSuite_toMarkdown("to markdown", "to-md", toMarkdownTestSuite);
-
-});
+declareTestSuite_toMarkdown("to markdown", "to-md", toMarkdownTestSuite);
