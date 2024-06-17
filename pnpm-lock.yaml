@@ -129,16 +129,56 @@ importers:
         version: 4.3.2(typescript@5.4.5)(vite@5.3.1(@types/node@20.14.2))
 
   remark-cite:
+    dependencies:
+      '@benrbray/mdast-util-cite':
+        specifier: workspace:^1.0.1
+        version: link:../mdast-util-cite
+      '@benrbray/micromark-extension-cite':
+        specifier: workspace:^1.0.0
+        version: link:../micromark-extension-cite
     devDependencies:
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
+      '@types/unist':
+        specifier: ^3.0.2
+        version: 3.0.2
+      del-cli:
+        specifier: ^5.1.0
+        version: 5.1.0
+      mdast-util-from-markdown:
+        specifier: ^2.0.1
+        version: 2.0.1
+      mdast-util-to-markdown:
+        specifier: ^2.1.0
+        version: 2.1.0
+      micromark-util-types:
+        specifier: ^2.0.0
+        version: 2.0.0
+      remark-parse:
+        specifier: ^11.0.0
+        version: 11.0.0
+      remark-stringify:
+        specifier: ^11.0.0
+        version: 11.0.0
       typescript:
         specifier: ^5.2.2
         version: 5.4.5
+      unified:
+        specifier: ^11.0.4
+        version: 11.0.4
       vite:
         specifier: ^5.2.0
         version: 5.3.1(@types/node@20.14.2)
+      vite-plugin-dts:
+        specifier: ^3.9.1
+        version: 3.9.1(@types/node@20.14.2)(rollup@4.18.0)(typescript@5.4.5)(vite@5.3.1(@types/node@20.14.2))
       vite-tsconfig-paths:
         specifier: ^4.3.2
         version: 4.3.2(typescript@5.4.5)(vite@5.3.1(@types/node@20.14.2))
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.0(@types/node@20.14.2)
 
 packages:
 

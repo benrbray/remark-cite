@@ -1,29 +1,30 @@
-// unified / unist / mdast/ remark
-import unified from 'unified';
-import * as Uni from "unist";
-import markdown from 'remark-parse';
-import remark2markdown from 'remark-stringify';
-var remarkStringify = require('remark-stringify')
+// testing
+import assert from "assert";
+import { describe, test } from "vitest";
 
-// // testing
-import * as assert from 'assert';
+// unified / unist / mdast/ remark
+import * as Uni from "unist";
+import { unified } from 'unified';
+import markdown from 'remark-parse';
+import remarkStringify from 'remark-stringify';
+// var remarkStringify = require('remark-stringify')
 
 // project imports
-import { CiteItem, InlineCiteNode } from "@benrbray/mdast-util-cite";
-import { CiteSyntaxOptions } from '@benrbray/micromark-extension-cite'
-import { citePlugin as remarkCitePlugin } from "..";
+import { InlineCiteNode } from "@benrbray/mdast-util-cite";
+import { citePlugin as remarkCitePlugin } from "../lib/main";
 
 // re-use tests from mdast-util-cite
-import * as MdastUtilCiteTests from "../../mdast-util-cite/test/test";
+import * as MdastUtilCiteTests from "../../mdast-util-cite/test/main.test";
+import { Root } from "mdast";
 
-////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 export function unistIsParent(node: Uni.Node): node is Uni.Parent {
-	return Boolean(node.children);
+	return Boolean((node as Uni.Parent).children);
 }
 
 export function unistIsStringLiteral(node: Uni.Node): node is Uni.Literal & { value: string } {
-	return (typeof node.value === "string");
+	return (typeof (node as Uni.Literal).value === "string");
 }
 
 ////////////////////////////////////////////////////////////
@@ -88,13 +89,13 @@ export function visitNodeType<S extends string, N extends Uni.Node & { type: S }
 
 ////////////////////////////////////////////////////////////
 
-function runTestSuite_fromMarkdown(contextMsg: string, descPrefix:string, testSuite: MdastUtilCiteTests.TestSuite<MdastUtilCiteTests.TestFromMd>): void {
-	context(contextMsg, () => {
+function describeTestSuite_fromMarkdown(contextMsg: string, descPrefix:string, testSuite: MdastUtilCiteTests.TestSuite<MdastUtilCiteTests.TestFromMd>): void {
+	describe(contextMsg, () => {
 
 		let idx = 0;
 		for(let testCase of testSuite.cases) {
 			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}] ` + (testCase.description || "");
-			it(desc, () => {
+			test(desc, () => {
 				// merge suite options with case options
 				let syntaxOptions = Object.assign({}, testSuite.options, testCase.options);
 
@@ -104,11 +105,11 @@ function runTestSuite_fromMarkdown(contextMsg: string, descPrefix:string, testSu
 					.use(remarkCitePlugin, { syntax: syntaxOptions });
 
 				var ast = processor.parse(testCase.markdown);
-				ast = processor.runSync(ast);
+				const result = processor.runSync(ast);
 
 				// accumulate citations
 				let citations: InlineCiteNode[] = [];
-				visitNodeType(ast, 'cite', (node: InlineCiteNode) => {
+				visitNodeType(result, 'cite', (node: InlineCiteNode) => {
 					citations.push(node);
 				});
 
@@ -124,13 +125,13 @@ function runTestSuite_fromMarkdown(contextMsg: string, descPrefix:string, testSu
 
 ////////////////////////////////////////////////////////////
 
-function runTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuite: MdastUtilCiteTests.TestSuite<MdastUtilCiteTests.TestToMd>): void {
-	context(contextMsg, () => {
+function describeTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuite: MdastUtilCiteTests.TestSuite<MdastUtilCiteTests.TestToMd>): void {
+	describe(contextMsg, () => {
 
 		let idx = 0;
 		for(let testCase of testSuite.cases) {
 			let desc = `[${descPrefix} ${("00" + (++idx)).slice(-3)}] ` + (testCase.description || "");
-			it(desc, () => {
+			test(desc, () => {
 				// merge suite options with case options
 				let toMarkdownOptions = Object.assign({}, testSuite.options, testCase.options);
 
@@ -140,7 +141,8 @@ function runTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuit
 					.use(remarkStringify)
 					.use(remarkCitePlugin, { toMarkdown: toMarkdownOptions });
 
-				var serialized = processor.stringify(testCase.ast);
+				var root: Root = { type: "root", children: [testCase.ast] };
+				var serialized = processor.stringify(root);
 
 				// check for match
 				assert.strictEqual(serialized.trim(), testCase.expected);
@@ -152,21 +154,13 @@ function runTestSuite_toMarkdown(contextMsg: string, descPrefix:string, testSuit
 ////////////////////////////////////////////////////////////
 
 // from markdown
-describe('remark-cite (fromMarkdown)', () => {
+describeTestSuite_fromMarkdown("pandoc syntax / single citation node", "pandoc-single", MdastUtilCiteTests.pandocSingleTestSuite);
+describeTestSuite_fromMarkdown("pandoc syntax / multiple citation nodes", "pandoc-multi", MdastUtilCiteTests.pandocMultiTestSuite);
+describeTestSuite_fromMarkdown("pandoc syntax / suppress author", "pandoc-suppress", MdastUtilCiteTests.pandocSuppressAuthorSuite);
 
-	runTestSuite_fromMarkdown("pandoc syntax / single citation node", "pandoc-single", MdastUtilCiteTests.pandocSingleTestSuite);
-	runTestSuite_fromMarkdown("pandoc syntax / multiple citation nodes", "pandoc-multi", MdastUtilCiteTests.pandocMultiTestSuite);
-	runTestSuite_fromMarkdown("pandoc syntax / suppress author", "pandoc-suppress", MdastUtilCiteTests.pandocSuppressAuthorSuite);
-
-	runTestSuite_fromMarkdown("alt syntax / single citation node", "alt-single", MdastUtilCiteTests.altSingleTestSuite);
-	runTestSuite_fromMarkdown("alt syntax / multiple citation nodes", "alt-multi", MdastUtilCiteTests.altMultiTestSuite);
-	runTestSuite_fromMarkdown("alt syntax / suppress author", "alt-suppress", MdastUtilCiteTests.altSuppressAuthorSuite);
-
-});
+describeTestSuite_fromMarkdown("alt syntax / single citation node", "alt-single", MdastUtilCiteTests.altSingleTestSuite);
+describeTestSuite_fromMarkdown("alt syntax / multiple citation nodes", "alt-multi", MdastUtilCiteTests.altMultiTestSuite);
+describeTestSuite_fromMarkdown("alt syntax / suppress author", "alt-suppress", MdastUtilCiteTests.altSuppressAuthorSuite);
 
 // to markdown
-describe('remark-cite (toMarkdown)', () => {
-
-	runTestSuite_toMarkdown("to markdown", "to-md", MdastUtilCiteTests.toMarkdownTestSuite);
-
-});
+describeTestSuite_toMarkdown("to markdown", "to-md", MdastUtilCiteTests.toMarkdownTestSuite);
