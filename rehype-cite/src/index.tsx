@@ -1,9 +1,10 @@
 /* @refresh reload */
-import { render } from 'solid-js/web'
+import { render } from 'solid-js/web';
 
-import './index.css'
-import { Demo } from "./Demo"
+import './index.css';
+import "katex/dist/katex.min.css";
+import { Demo } from "./Demo";
 
-const root = document.getElementById('root')
+const root = document.getElementById('root');
 
-render(() => <Demo />, root!)
+render(() => <Demo />, root!);
