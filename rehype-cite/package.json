@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@benrbray/remark-cite": "workspace:^1.1.0",
+    "@benrbray/mdast-util-cite": "workspace:^1.1.0",
     "@citation-js/core": "^0.7.14",
     "@citation-js/date": "^0.5.1",
     "@citation-js/name": "^0.4.2",
@@ -17,10 +19,8 @@
     "@citation-js/plugin-csl": "^0.7.14",
     "rehype": "^13.0.1",
     "solid-js": "^1.8.15",
+    "unist-util-visit": "^5.0.0",
     "unist-util-visit-parents": "^6.0.1"
-  },
-  "peerDependencies": {
-    "@benrbray/remark-cite": "workspace:^1.1.0"
   },
   "devDependencies": {
     "@types/hast": "^3.0.4",

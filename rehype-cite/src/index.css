@@ -53,3 +53,10 @@ body {
   overflow-y: scroll;
   overflow-x: hidden;
 }
+
+/* ------------------------------------------------------ */
+
+.result-html .biblio-title {
+  font-weight: bold;
+  font-size: 1.2em;
+}

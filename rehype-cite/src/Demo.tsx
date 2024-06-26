@@ -6,9 +6,12 @@ import remarkCite from "@benrbray/remark-cite";
 import remarkMath from "remark-math";
 
 import rehypeKatex from "rehype-katex";
-import rehypeSanitize from "rehype-sanitize";
 import rehypeStringify from "rehype-stringify";
 import { unified } from "unified";
+
+import rehypeCite from "../lib/main";
+
+import bibFile from "./refs.bib?raw"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -17,17 +20,14 @@ const processor = unified()
   .use(remarkMath)
   .use(remarkCite)
   .use(remarkRehype)
-  // .use(rehypeKatex)
-  // .use(rehypeSanitize)
+  .use(rehypeKatex)
+  .use(rehypeCite, { bibFiles : [bibFile] })
   .use(rehypeStringify);
 
 const markdown2html = (markdown: string): string => {
   const mdast = processor.parse(markdown);
   const hast  = processor.runSync(mdast);
-
-  console.log(hast);
-
-  return processor.processSync(markdown).toString()
+  return processor.stringify(hast).toString()
 }
 
 export const Demo = () => {

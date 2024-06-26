@@ -84,6 +84,9 @@ importers:
 
   rehype-cite:
     dependencies:
+      '@benrbray/mdast-util-cite':
+        specifier: workspace:^1.1.0
+        version: link:../mdast-util-cite
       '@benrbray/remark-cite':
         specifier: workspace:^1.1.0
         version: link:../remark-cite
@@ -111,6 +114,9 @@ importers:
       solid-js:
         specifier: ^1.8.15
         version: 1.8.17
+      unist-util-visit:
+        specifier: ^5.0.0
+        version: 5.0.0
       unist-util-visit-parents:
         specifier: ^6.0.1
         version: 6.0.1
