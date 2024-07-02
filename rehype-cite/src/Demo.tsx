@@ -9,6 +9,8 @@ import rehypeKatex from "rehype-katex";
 import rehypeStringify from "rehype-stringify";
 import { unified } from "unified";
 
+import dedent from "dedent-js";
+
 import rehypeCite from "../lib/main";
 
 import bibFile from "./refs.bib?raw"
@@ -31,7 +33,10 @@ const markdown2html = (markdown: string): string => {
 }
 
 export const Demo = () => {
-  const initialMarkdown = "";
+  const initialMarkdown = dedent`
+    # Introduction
+    As observed by [@riehl2017:category], and further developed by [@milewski:ct4p-yoneda, Section 1.2; @meijer1991functional, p.4]
+    `;
   const initialBibtex = "";
 
   const [markdown, setMarkdown] = createSignal(initialMarkdown);

@@ -19,7 +19,10 @@ export type RehypeCiteOptions = {
 
 export function rehypeCite(options: RehypeCiteOptions) {
 
-  const references = new Cite(options.bibFiles, );
+  const references = new Cite(options.bibFiles);
+
+  const config = plugins.config.get('@csl');
+  // const citeproc = config.engine(citations.data, citeFormat, lang, 'html')
 
   /* ---------------------------------------------------- */
 
@@ -54,8 +57,18 @@ export function rehypeCite(options: RehypeCiteOptions) {
     return makeBiblioElement(citeItems);
   }
 
-  const processInlineCite = (citeItems: CiteItem[]) => {
-    // TODO
+  // replaces the placeholder inline citation produced by remark-cite
+  // with a nicely-formatted html produced by citeproc-js
+  const processInlineCite = (
+    citeItems: CiteItem[],
+    element: HastElement,
+    parent: HastElement | Root | undefined
+  ) => {
+    const entryIds = citeItems.map(ci => ci.key);
+    const citation = references.format("citation", { entry: entryIds }) as string;
+    element.children = [{ type: "text", value: citation }];
+
+    
   }
 
   /* ---- transform ------------------------------------- */
@@ -63,7 +76,7 @@ export function rehypeCite(options: RehypeCiteOptions) {
   return function(tree: Root, file: VFile): undefined {
     let citations: CiteItem[] = [];
 
-    visit(tree, 'element', function(element): VisitorResult {
+    visit(tree, 'element', function(element, index, parent): VisitorResult {
       // look for elements marked with "cite-inline" class
       const classes = Array.isArray(element.properties.className)
         ? element.properties.className
@@ -80,7 +93,8 @@ export function rehypeCite(options: RehypeCiteOptions) {
       citations = citations.concat(citeItem);
 
       // create inline citation
-      processInlineCite(citeItem);
+      processInlineCite(citeItem, element, parent);
+      // element.children = [{ type: "text", value: "lololol" }];
 
       return SKIP;
     });

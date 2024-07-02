@@ -74,11 +74,60 @@ declare module "@citation-js/core" {
     validateOptions(): boolean;
   }
 
+  /**
+  * @memberof module:@citation-js/core.util
+  * @param {Object} [data={}] - initial values
+  */
+  declare class Register<V=any> {
+      constructor(data?: {});
+      data: {};
+      /**
+      * @param {String} key
+      * @param {*} value
+      * @return {Register} this
+      */
+      set(key: string, value: V): Register;
+      /**
+      * @param {String} key
+      * @param {*} value
+      * @return {Register} this
+      */
+      add(key: string, value: V): this;
+      /**
+      * @param {String} key
+      * @return {Register} this
+      */
+      delete(key: string): Register;
+      /**
+      * @param {String} key
+      * @return {Register} this
+      */
+      remove(key: string): Register;
+      /**
+      * @param {String} key
+      * @return {*} value
+      */
+      get(key: string): V;
+      /**
+      * @param {String} key
+      * @return {Boolean} register has key
+      */
+      has(key: string): boolean;
+      /**
+      * @return {Array<String>} list of keys
+      */
+      list(): Array<string>;
+  }
+
+  declare interface PluginRefMap {
+    // to be extended by plugins
+  }
+  
   declare namespace plugins {
-    type PluginRef = string;
+    type PluginRef = keyof PluginRefMap;
 
     declare namespace config {
-      function get(ref: PluginRef): unknown;
+      function get<P extends PluginRef = PluginRef>(ref: P): PluginRefMap[P];
     };
 
     function add(ref: PluginRef, plugins): void;
