@@ -11,6 +11,8 @@ import "@citation-js/plugin-csl";
 import "@citation-js/plugin-bibtex";
 import "@citation-js/plugin-bibjson";
 
+import styleApa from "./styles/apa";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 export type RehypeCiteOptions = { 
@@ -22,7 +24,10 @@ export function rehypeCite(options: RehypeCiteOptions) {
   const references = new Cite(options.bibFiles);
 
   const config = plugins.config.get('@csl');
-  // const citeproc = config.engine(citations.data, citeFormat, lang, 'html')
+  const citeFormat = "apa"; // TODO (citation-js fetches by http request)
+  const citeproc = config.engine(references.data, citeFormat, "en-US", 'html');
+
+  console.log(citeproc);
 
   /* ---------------------------------------------------- */
 
@@ -59,6 +64,18 @@ export function rehypeCite(options: RehypeCiteOptions) {
 
   // replaces the placeholder inline citation produced by remark-cite
   // with a nicely-formatted html produced by citeproc-js
+  const processInlineCiteSimple = (
+    citeItems: CiteItem[],
+    element: HastElement,
+    parent: HastElement | Root | undefined
+  ) => {
+    const entryIds = citeItems.map(ci => ci.key);
+    const citation = references.format("citation", { entry: entryIds }) as string;
+    element.children = [{ type: "text", value: citation }];
+  }
+
+  // replaces the placeholder inline citation produced by remark-cite
+  // with a nicely-formatted html produced by citeproc-js
   const processInlineCite = (
     citeItems: CiteItem[],
     element: HastElement,
@@ -68,7 +85,23 @@ export function rehypeCite(options: RehypeCiteOptions) {
     const citation = references.format("citation", { entry: entryIds }) as string;
     element.children = [{ type: "text", value: citation }];
 
-    
+    const result = citeproc.processCitationCluster(
+      {
+        citationItems: citeItems.map(ci => ({
+          id: ci.key,
+          prefix: ci.prefix,
+          suffix: ci.suffix,
+          "suppress-author": ci.suppressAuthor
+        })),
+        properties: {
+          noteIndex: 0
+        }
+      },
+      [],
+      []
+    );
+
+    console.log(result);
   }
 
   /* ---- transform ------------------------------------- */

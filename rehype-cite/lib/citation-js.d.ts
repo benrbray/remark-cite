@@ -30,6 +30,8 @@ declare module "@citation-js/core" {
   type CompareCSL = (a : import("./csl-data").CSL, b: import("./csl-data").CSL) => number;
 
   declare class Cite {
+    data: unknown[];
+
     /** Create a Cite object with almost any kind of data, and manipulate it with its default methods. */
     constructor(data: InputData, options?: InputOptions)
 

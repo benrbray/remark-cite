@@ -13,6 +13,6 @@ declare module "@citation-js/core" {
 declare module "@citation-js/csl" {
   declare type CslPluginConfig = {
     templates: import("@citation-js/core").Register<string>,
-    engine(data: any[], style: "apa", locale: "en-US", format: "html")
+    engine(data: any[], style: "apa", locale: "en-US", format: "html"): import("citeproc").CSL.Engine
   };
 }
