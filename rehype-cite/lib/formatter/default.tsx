@@ -1,6 +1,7 @@
 /** @jsxImportSource hastscript */
 
 import { EntryObject, FieldValueMap, Formatter, HastElement, NameValue, TextValue } from "@lib/types";
+import { ElementContent } from "hast";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -73,32 +74,53 @@ const debug = (template: Template): Template => ({
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export const formatString = (value: string): string => value;
+export const formatString = (value: string): EvalResult => ({
+  type: "string",
+  value: value
+});
 
-export const formatTextValue = (value: TextValue): string => {
-  return value.text;
+export const formatTextValue = (value: TextValue): EvalResult => ({
+  type: "string",
+  value: value.text
+});
+
+export const formatTextValues = (values: TextValue[]): EvalResult => ({
+  type: "sequence",
+  values: values.map(formatTextValue)
+});
+
+export const intersperse = <A,>(as: A[], sep: A): A[] => {
+  return as.flatMap((a,idx) => {
+    if(idx === 0) { return [a]; }
+    return [sep, a];
+  });
 }
 
-export const formatTextValues = (values: TextValue[]): string => {
-  return values.map(formatTextValue).join("");
-}
+export const formatTextValuess = (values: TextValue[][]): EvalResult => ({
+  type: "sequence",
+  values: intersperse(values.map(formatTextValues), { type: "string", value: ", " })
+});
 
-export const formatTextValuess = (values: TextValue[][]): string => {
-  return values.map(formatTextValues).join(", ");
-}
+export const formatPages = (values: [TextValue[], TextValue[]][]): EvalResult => ({
+  type: "sequence",
+  values: intersperse(
+    values.map(([a,b]) => {
+      return { type: "string", value: `${formatTextValues(a)}-${formatTextValues(b)}` };
+    }), 
+    { type: "string", value: ", " }
+  )
+});
 
-export const formatPages = (values: [TextValue[], TextValue[]][]): string => {
-  return values.map(([a,b]) => {
-    return `${formatTextValues(a)}-${formatTextValues(b)}`;
-  }).join(", ");
-}
-
-export const formatNameValue = (name: NameValue): string|null => {
-  const given  = name.given  ? formatTextValues(name.given)  : "";
-  const family = name.family ? formatTextValues(name.family) : "";
-
+export const formatNameValue = (name: NameValue): EvalResult|null => {
   if(name.given && name.family) {
-    return `${family}, ${given}`;
+    return {
+      type: "sequence",
+      values: [
+        formatTextValues(name.family),
+        { type: "string", value: ", " },
+        formatTextValues(name.given),
+      ]
+    };
   } else if(name.literal) {
     return formatTextValues(name.literal);
   } else {
@@ -106,26 +128,82 @@ export const formatNameValue = (name: NameValue): string|null => {
   }
 }
 
-export const formatNameValues = (values: NameValue[]): string => {
-  return values.flatMap((name, idx) => {
-    const formatted = formatNameValue(name);
-    if(idx === 0) {
-      return [formatted]
-    } if(idx < values.length - 1) {
-      return ["; ", formatted]
-    } else {
-      return ["; and ", formatted]
-    }
-  }).join("");
+export const formatNameValues = (values: NameValue[]): EvalResult|null => {
+  const maybeNames = values.map(formatNameValue);
+  if(!maybeNames.every(e => e !== null)) { return null; }
+  const names = maybeNames as EvalResult[];
+
+  return {
+    type: "sequence",
+    values: names.flatMap((v,idx) => {
+      if(idx === 0) { return [v]; }
+      if(idx < values.length - 1) { return [{ type: "string", value: "; " }, v]; }
+      return [{ type: "string", value: "; and " }, v];
+    })
+  }
 }
 
-export const formatLocation = (values: TextValue[][]): string => {
-  return values.map(formatTextValues).join(", ");
-}
+export const formatLocation = (values: TextValue[][]): EvalResult => ({
+  type: "sequence",
+  values: intersperse(values.map(formatTextValues), { type: "string", value: ", " })
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const evalFieldMap: { [K in keyof FieldValueMap]?: (v: FieldValueMap[K]) => string } = {
+type EvalResult
+  = { type: "group", group: string, values: EvalResult[] }
+  | { type: "field", field: string, values: EvalResult[] }
+  | { type: "link", href: string, values: EvalResult[] }
+  | { type: "string", value: string }
+  | { type: "sequence", values: EvalResult[] }
+  | { type: "empty" }
+
+////////////////////////////////////////////////////////////////////////////////
+
+const renderResult = (result: EvalResult): ElementContent[] => {
+  if(result.type === "empty") { return []; }
+  if(result.type === "string") { return [{ type: "text", value: result.value }]; }
+  if(result.type === "field") {
+    return [{
+      type: "element",
+      tagName: "span",
+      properties: { className: `field-${result.field}` },
+      children: result.values.flatMap(renderResult)
+    }];
+  }
+  if(result.type === "sequence") {
+    return result.values.flatMap(renderResult);
+  }
+  if(result.type === "group") {
+    return [{
+      type: "element",
+      tagName: "div",
+      properties: { className: `group-${result.group}` },
+      children: result.values.flatMap(renderResult)
+    }];
+  }
+  if(result.type === "link") {
+    return [{
+      type: "element",
+      tagName: "a",
+      properties: { className: `link`, href: result.href },
+      children: result.values.flatMap(renderResult)
+    }];
+  }
+
+  return assertNever(result);
+} 
+
+const renderResultString = (result: EvalResult): string => {
+  if(result.type === "empty") { return ""; }
+  if(result.type === "string") { return result.value }
+
+  return result.values.map(renderResultString).join("");
+} 
+
+////////////////////////////////////////////////////////////////////////////////
+
+const evalFieldMap: { [K in keyof FieldValueMap]?: (v: FieldValueMap[K]) => EvalResult|null } = {
   "author" : formatNameValues,
   "bookauthor" : formatNameValues,
   "translator" : formatNameValues,
@@ -139,6 +217,7 @@ const evalFieldMap: { [K in keyof FieldValueMap]?: (v: FieldValueMap[K]) => stri
 
   "date" : formatString,
   "url" : formatString,
+  "urldate" : formatString,
 
   "location" : formatTextValuess,
   
@@ -149,42 +228,49 @@ const evalFieldMap: { [K in keyof FieldValueMap]?: (v: FieldValueMap[K]) => stri
   "pages" : formatPages
 };
 
-const evalField = (entry: EntryObject, field: string): string|null => {
+const evalField = (entry: EntryObject, field: string): EvalResult|null => {
   const fieldValue = (entry.fields as any)[field];
   if(!fieldValue) { return null; }
 
-  const formatter = (evalFieldMap as any)[field] || formatTextValues as ((x: unknown) => string);
+  const formatter = ((evalFieldMap as any)[field] || formatTextValues) as ((x: unknown) => EvalResult|null);
   const result = formatter(fieldValue);
 
-  return result;
+  if(result === null) { return result; }
+
+  return { type: "field", field: field, values: [result] };
 }
 
-const evalOptional = (entry: EntryObject, part: Template): string => {
+const evalOptional = (entry: EntryObject, part: Template): EvalResult => {
   const result = evalTemplate(entry, part);
-  return result || "";
+
+  if(result !== null) { return result; }
+  else { return { type: "empty" }; }
 }
 
-const evalDebug = (entry: EntryObject, template: Template): string|null => {
+const evalDebug = (entry: EntryObject, template: Template): EvalResult|null => {
   const result = evalTemplate(entry, template);
   console.log("debug", result);
   return result;
 }
 
-const evalJoin = (entry: EntryObject, separator: string, parts: Template[]) => {
+const evalJoin = (entry: EntryObject, separator: string, parts: Template[]): EvalResult|null => {
   const evalParts = parts.map(t => {
     return evalTemplate(entry, t)
-  }).filter(t => t !== "");
+  }).filter(t => t == null || t.type !== "empty");
 
   if(evalParts.every(p => p !== null)) {
-    return evalParts.join(separator);
+    return {
+      type: "sequence",
+      values: intersperse(evalParts as EvalResult[], { type: "string", value: separator })
+    };
   } else {
     return null;
   }
 }
 
-const evalTemplate = (entry: EntryObject, template: Template): string|null => {
+const evalTemplate = (entry: EntryObject, template: Template): EvalResult|null => {
   // literals
-  if(typeof template === "string") { return template; }
+  if(typeof template === "string") { return { type: "string", value: template }; }
 
   // optional
   if(template.type === "optional") { return evalOptional(entry, template.template); }
@@ -208,8 +294,23 @@ const evalTemplate = (entry: EntryObject, template: Template): string|null => {
 
   // marks
   if(template.type === "link") {
-    // TODO
-    return evalTemplate(entry, template.part);
+    const resultHref = evalTemplate(entry, template.href);
+
+    console.log("resultHref", resultHref, resultHref && renderResultString(resultHref));
+
+    const resultBody = evalTemplate(entry, template.part);
+
+    if(resultBody === null) { return null; }
+
+    if(resultHref === null) {
+      return resultBody;
+    } else {
+      return {
+        type: "link",
+        href: renderResultString(resultHref),
+        values: [resultBody]
+      }
+    }
   }
 
   if(template.type === "debug") {
@@ -283,7 +384,8 @@ const defaultTemplate = periods(
     oneof(
       field("date"),
       "(no date)"
-    )
+    ),
+    join("Accessed ", field("urldate"))
   )
 );
 
@@ -411,10 +513,23 @@ export const formatterBase: Formatter = (entry: EntryObject) => {
 export const formatter = (entry: EntryObject): HastElement => {
   console.log(entry.entry_key, entry.bib_type);
 
-  return {
-    type: "element",
-    tagName: "div",
-    properties: { className: "bib-entry" },
-    children: [{ type: "text", value: evalTemplate(entry, defaultTemplate)||"error" }]
-  };
+  const result = evalTemplate(entry, defaultTemplate);
+
+  console.log(result);
+
+  if(result === null) {
+    return {
+      type: "element",
+      tagName: "div",
+      properties: { className: "bib-entry error" },
+      children: [{ type: "text", value: "error" }]
+    };
+  } else {
+    return {
+      type: "element",
+      tagName: "div",
+      properties: { className: "bib-entry" },
+      children: renderResult(result)
+    };
+  }
 }

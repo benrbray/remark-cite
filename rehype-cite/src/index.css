@@ -65,3 +65,7 @@ body {
 .result-html .bib-entry {
   margin: 0.5em 0;
 }
+
+.bib-entry .field-title {
+  font-weight: bold;
+}

@@ -73,6 +73,7 @@ type NameFields = ExtractCompatible<BibFieldTypes, {type: "l_name"}>;
 export type FieldValueMap = {
   "date" : string,
   "url" : string,
+  "urldate" : string,
   "location" : TextValue[][],
 
   "publisher" : TextValue[][],
