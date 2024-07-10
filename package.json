@@ -1,14 +1,17 @@
 {
-	"private" : true,
-	"scripts": {
-		"build:micromark-extension-cite": "cd micromark-extension-cite && npm run build",
-		"build:remark-cite": "cd remark-cite && npm run build",
-		"build:mdast-util-cite": "cd mdast-util-cite && npm run build",
-		"build" : "npm run build:micromark-extension-cite; npm run build:mdast-util-cite; npm run build:remark-cite",
-
-		"test:micromark-extension-cite": "cd micromark-extension-cite && npm run test",
-		"test:remark-cite": "cd remark-cite && npm run test",
-		"test:mdast-util-cite": "cd mdast-util-cite && npm run test",
-		"test": "npm run test:micromark-extension-cite; npm run test:mdast-util-cite; npm run test:remark-cite"
-	}
+  "private": true,
+  "scripts": {
+    "build:micromark-extension-cite": "cd micromark-extension-cite && npm run build",
+    "build:remark-cite": "cd remark-cite && npm run build",
+    "build:mdast-util-cite": "cd mdast-util-cite && npm run build",
+    "build": "npm run build:micromark-extension-cite; npm run build:mdast-util-cite; npm run build:remark-cite",
+    "test:micromark-extension-cite": "cd micromark-extension-cite && npm run test",
+    "test:remark-cite": "cd remark-cite && npm run test",
+    "test:mdast-util-cite": "cd mdast-util-cite && npm run test",
+    "test": "npm run test:micromark-extension-cite; npm run test:mdast-util-cite; npm run test:remark-cite"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "lerna": "^8.1.5"
+  }
 }
