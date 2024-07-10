@@ -17,6 +17,8 @@
     "@citation-js/plugin-bibjson": "^0.7.14",
     "@citation-js/plugin-bibtex": "^0.7.14",
     "@citation-js/plugin-csl": "^0.7.14",
+    "biblatex-csl-converter": "^2.1.0",
+    "hastscript": "^9.0.0",
     "rehype": "^13.0.1",
     "solid-js": "^1.8.15",
     "unist-util-visit": "^5.0.0",

@@ -8,6 +8,9 @@ export default defineConfig({
     solid(),
     tsConfigPaths()
   ],
+  esbuild: {
+    jsx: 'automatic' // needed to silence vite warning with hastscript in *.jsx files
+  },
   build: {
     lib: {
       formats: ["es"],

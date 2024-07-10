@@ -1,3 +1,5 @@
+/** @jsxImportSource hastscript */
+
 import type { Root, Element as HastElement} from "hast";
 import type { VFile } from "vfile";
 
@@ -6,12 +8,15 @@ import { CiteItem } from "@benrbray/mdast-util-cite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-import { Cite, plugins } from "@citation-js/core";
-import "@citation-js/plugin-csl";
-import "@citation-js/plugin-bibtex";
-import "@citation-js/plugin-bibjson";
+import { BibLatexParser } from "biblatex-csl-converter"
+import { EntryObject, Formatter } from "./types";
+import { formatter } from "./formatter/default";
 
-import styleApa from "./styles/apa";
+////////////////////////////////////////////////////////////////////////////////
+
+const formatEntry = (entry: EntryObject): HastElement => {
+  return formatter(entry);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -21,17 +26,56 @@ export type RehypeCiteOptions = {
 
 export function rehypeCite(options: RehypeCiteOptions) {
 
-  const references = new Cite(options.bibFiles);
+  // const references = new Cite(options.bibFiles);
 
-  const config = plugins.config.get('@csl');
-  const citeFormat = "apa"; // TODO (citation-js fetches by http request)
-  const citeproc = config.engine(references.data, citeFormat, "en-US", 'html');
+  // biblatex-csl-converter
+  let inputBib = options.bibFiles.join("\n\n");
+  let parser = new BibLatexParser(inputBib, {processUnexpected: true, processUnknown: true})
+  let bibJson = parser.parse();
+  let bibEntries = Object.values(bibJson.entries) as EntryObject[];
+  console.log(bibEntries);
 
-  console.log(citeproc);
+  // const config = plugins.config.get('@csl');
+  // const citeFormat = "apa"; // TODO (citation-js fetches by http request)
+  // const citeproc = config.engine(references.data, citeFormat, "en-US", 'html');
+
+  // console.log(citeproc);
 
   /* ---------------------------------------------------- */
 
-  const makeBiblioElement = (citeItems: CiteItem[]) => {
+  const getEntry = (key: string): EntryObject | null => {
+    return bibEntries.find(entry => entry.entry_key === key) || null;
+  }
+
+  // const renderBibliography = (citeItems: CiteItem[]): HastElement => {
+  //   const biblioTitle: HastElement = {
+  //     type: "element",
+  //     tagName: "div",
+  //     properties: { "className" : "biblio-title" },
+  //     children: [{ type: "text", value: "Bibliography" }]
+  //   };
+
+  //   const entries: HastElement[] = citeItems.flatMap(ci => {
+  //     const entry = getEntry(ci.key);
+
+  //     if(!entry) { return []; }
+
+  //     return formatEntry(entry);
+  //   });
+
+  //   const biblioElement: HastElement = {
+  //     type: "element",
+  //     tagName: "div",
+  //     properties: {},
+  //     children: [biblioTitle, ...entries]
+  //   }
+
+  //   return biblioElement;
+  // }
+
+  const processBibliography = (citeItems: CiteItem[]): HastElement => {
+    const formattedEntries = bibEntries.map(e => formatEntry(e ));
+
     const biblioTitle: HastElement = {
       type: "element",
       tagName: "div",
@@ -39,39 +83,12 @@ export function rehypeCite(options: RehypeCiteOptions) {
       children: [{ type: "text", value: "Bibliography" }]
     };
 
-    const entries: HastElement[] = citeItems.map(ci => {
-      return {
-        type: "element",
-        tagName: "div",
-        properties: { "className" : "biblio-entry" },
-        children: [{ type: "text", value: ci.key }]
-      }
-    });
-
-    const biblioElement: HastElement = {
+    return {
       type: "element",
       tagName: "div",
       properties: {},
-      children: [biblioTitle, ...entries]
+      children: [biblioTitle, ...formattedEntries]
     }
-
-    return biblioElement;
-  }
-
-  const processBibliography = (citeItems: CiteItem[]) => {
-    return makeBiblioElement(citeItems);
-  }
-
-  // replaces the placeholder inline citation produced by remark-cite
-  // with a nicely-formatted html produced by citeproc-js
-  const processInlineCiteSimple = (
-    citeItems: CiteItem[],
-    element: HastElement,
-    parent: HastElement | Root | undefined
-  ) => {
-    const entryIds = citeItems.map(ci => ci.key);
-    const citation = references.format("citation", { entry: entryIds }) as string;
-    element.children = [{ type: "text", value: citation }];
   }
 
   // replaces the placeholder inline citation produced by remark-cite
@@ -82,26 +99,26 @@ export function rehypeCite(options: RehypeCiteOptions) {
     parent: HastElement | Root | undefined
   ) => {
     const entryIds = citeItems.map(ci => ci.key);
-    const citation = references.format("citation", { entry: entryIds }) as string;
-    element.children = [{ type: "text", value: citation }];
+    // const citation = references.format("citation", { entry: entryIds }) as string;
+    element.children = [{ type: "text", value: entryIds.join("; ") }];
 
-    const result = citeproc.processCitationCluster(
-      {
-        citationItems: citeItems.map(ci => ({
-          id: ci.key,
-          prefix: ci.prefix,
-          suffix: ci.suffix,
-          "suppress-author": ci.suppressAuthor
-        })),
-        properties: {
-          noteIndex: 0
-        }
-      },
-      [],
-      []
-    );
+    // const result = citeproc.processCitationCluster(
+    //   {
+    //     citationItems: citeItems.map(ci => ({
+    //       id: ci.key,
+    //       prefix: ci.prefix,
+    //       suffix: ci.suffix,
+    //       "suppress-author": ci.suppressAuthor
+    //     })),
+    //     properties: {
+    //       noteIndex: 0
+    //     }
+    //   },
+    //   [],
+    //   []
+    // );
 
-    console.log(result);
+    // console.log(result);
   }
 
   /* ---- transform ------------------------------------- */
@@ -127,7 +144,6 @@ export function rehypeCite(options: RehypeCiteOptions) {
 
       // create inline citation
       processInlineCite(citeItem, element, parent);
-      // element.children = [{ type: "text", value: "lololol" }];
 
       return SKIP;
     });

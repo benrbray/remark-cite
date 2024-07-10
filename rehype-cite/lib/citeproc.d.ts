@@ -100,6 +100,7 @@ declare module "citeproc" {
        *   * a data object
        *   * an array of one or more index/string pairs, one for each citation
        *     affected by the citation edit or insertion operation.
+       * @see https://github.com/Juris-M/citeproc-js-docs/pull/9/files
        */
       processCitationCluster(
         citation: CitationObject,
@@ -112,7 +113,28 @@ declare module "citeproc" {
         },
         [clusterPosition: number, formattedCitationCluster: string, clusterId: Id][]
       ]
+
+      makeBibliography(): Bibliography;
     }
 
   }
+
+  type Bibliography = [
+    {
+      /**
+       * The maximum number of characters appearing in any label used
+       * in the biblography, to be used for alignment purposes.
+       */
+      maxoffset: number,
+      entryspacing: number,
+      linespacing: number,
+      hangingindent: number,
+      "second-field-align": false|"flush"|"margin",
+      bibstart: string,
+      bibend: string,
+      bibliography_errors: unknown[],
+      entry_ids: string[]
+    },
+    string[]
+  ];
 }

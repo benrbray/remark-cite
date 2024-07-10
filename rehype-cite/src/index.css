@@ -42,6 +42,7 @@ body {
   grid-area: html;
   padding: var(--gap-1);
   background-color: #eef8ff;
+  overflow-y: auto;
 }
 
 .demo .result-ast {
@@ -59,4 +60,8 @@ body {
 .result-html .biblio-title {
   font-weight: bold;
   font-size: 1.2em;
+}
+
+.result-html .bib-entry {
+  margin: 0.5em 0;
 }
