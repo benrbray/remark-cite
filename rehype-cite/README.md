@@ -23,20 +23,6 @@ Instead, `rehype-cite` includes a custom formatter which produces **structured o
 
 In addition to the built-in formatter, `rehype-cite` includes a DSL for writing new formatters.
 
-## Development
-
-Build dependencies, in order:
-
-```
-lerna run build
-```
-
-Publishing
-
-```
-lerna publish --no-private
-```
-
 ## Resources
 
 * [BibLaTeX Cheat Sheet](https://tug.ctan.org/info/biblatex-cheatsheet/biblatex-cheatsheet.pdf)

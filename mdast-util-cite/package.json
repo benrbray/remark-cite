@@ -36,7 +36,8 @@
     "prepare": "pnpm run clean; pnpm run build",
     "pretest": "pnpm run clean; pnpm run build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "publish-pnpm": "pnpm publish"
   },
   "dependencies": {
     "@benrbray/micromark-extension-cite": "workspace:^2.0.1-alpha.0"

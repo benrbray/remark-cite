@@ -40,7 +40,8 @@
     "prepare": "pnpm run clean; pnpm run build",
     "pretest": "pnpm run clean; pnpm run build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "publish-pnpm": "pnpm publish"
   },
   "peerDependencies": {
     "micromark": "^4.0.0"
