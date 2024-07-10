@@ -34,44 +34,11 @@ export function rehypeCite(options: RehypeCiteOptions) {
   let bibJson = parser.parse();
   let bibEntries = Object.values(bibJson.entries) as EntryObject[];
   console.log(bibEntries);
-
-  // const config = plugins.config.get('@csl');
-  // const citeFormat = "apa"; // TODO (citation-js fetches by http request)
-  // const citeproc = config.engine(references.data, citeFormat, "en-US", 'html');
-
-  // console.log(citeproc);
-
   /* ---------------------------------------------------- */
 
   const getEntry = (key: string): EntryObject | null => {
     return bibEntries.find(entry => entry.entry_key === key) || null;
   }
-
-  // const renderBibliography = (citeItems: CiteItem[]): HastElement => {
-  //   const biblioTitle: HastElement = {
-  //     type: "element",
-  //     tagName: "div",
-  //     properties: { "className" : "biblio-title" },
-  //     children: [{ type: "text", value: "Bibliography" }]
-  //   };
-
-  //   const entries: HastElement[] = citeItems.flatMap(ci => {
-  //     const entry = getEntry(ci.key);
-
-  //     if(!entry) { return []; }
-
-  //     return formatEntry(entry);
-  //   });
-
-  //   const biblioElement: HastElement = {
-  //     type: "element",
-  //     tagName: "div",
-  //     properties: {},
-  //     children: [biblioTitle, ...entries]
-  //   }
-
-  //   return biblioElement;
-  // }
 
   const processBibliography = (citeItems: CiteItem[]): HastElement => {
     const formattedEntries = bibEntries.map(e => formatEntry(e ));
@@ -99,26 +66,7 @@ export function rehypeCite(options: RehypeCiteOptions) {
     parent: HastElement | Root | undefined
   ) => {
     const entryIds = citeItems.map(ci => ci.key);
-    // const citation = references.format("citation", { entry: entryIds }) as string;
     element.children = [{ type: "text", value: entryIds.join("; ") }];
-
-    // const result = citeproc.processCitationCluster(
-    //   {
-    //     citationItems: citeItems.map(ci => ({
-    //       id: ci.key,
-    //       prefix: ci.prefix,
-    //       suffix: ci.suffix,
-    //       "suppress-author": ci.suppressAuthor
-    //     })),
-    //     properties: {
-    //       noteIndex: 0
-    //     }
-    //   },
-    //   [],
-    //   []
-    // );
-
-    // console.log(result);
   }
 
   /* ---- transform ------------------------------------- */
