@@ -85,9 +85,6 @@ export type FieldValueMap = {
 
 type FieldValue<K> = K extends keyof FieldValueMap ? FieldValueMap[K] : TextValue[];
 
-const a: keyof FieldValueMap = "author";
-type Foo = FieldValue<"author">;
-
 type GetFields<K,J extends "required"|"optional"|"eitheror"> = K extends EntryType ? {
   [ Field in BibTypes[K][J][number] ] : FieldValue<Field>
 } : never;
@@ -97,7 +94,6 @@ type OptionalFields<K> = GetFields<K,"optional">;
 type EitherOrFields<K> = GetFields<K,"eitheror">;
 
 type Fields<K> = Partial<RequiredFields<K>> & Partial<OptionalFields<K>> & Partial<EitherOrFields<K>>;
-type AllFields = Fields<EntryType>;
 
 type Entry<K> = K extends EntryType ? {
   entry_key: string,

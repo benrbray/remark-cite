@@ -40,7 +40,7 @@ export const Demo = () => {
   const initialBibtex = "";
 
   const [markdown, setMarkdown] = createSignal(initialMarkdown);
-  const [bibtex, setBibtex] = createSignal(initialBibtex);
+  const [_bibtex, setBibtex] = createSignal(initialBibtex);
 
   return <div class="demo">
     <textarea class="input-markdown" value={initialMarkdown} onInput={t => setMarkdown(t.target.value)} />

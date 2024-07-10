@@ -9,18 +9,18 @@ import { ElementContent } from "hast";
  * Priority of name-type fields to check when determining
  * the primary author for use in inline citations.
  */
-const primaryAuthorPriority = [
-  "author",
-  "bookauthor",
-  "translator",
-  "holder",
-  "editor",
-  "commentator",
-  "introduction",
-  "forward",
-  "afterword",
-  "annotator",
-];
+// const primaryAuthorPriority = [
+//   "author",
+//   "bookauthor",
+//   "translator",
+//   "holder",
+//   "editor",
+//   "commentator",
+//   "introduction",
+//   "forward",
+//   "afterword",
+//   "annotator",
+// ];
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -66,10 +66,11 @@ const oneof = (...templates: Template[]): Template => ({
   type: "oneof",
   templates
 });
-const debug = (template: Template): Template => ({
-  type: "debug",
-  template
-});
+
+// const debug = (template: Template): Template => ({
+//   type: "debug",
+//   template
+// });
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -103,9 +104,19 @@ export const formatTextValuess = (values: TextValue[][]): EvalResult => ({
 
 export const formatPages = (values: [TextValue[], TextValue[]][]): EvalResult => ({
   type: "sequence",
-  values: intersperse(
+  values: intersperse<EvalResult>(
     values.map(([a,b]) => {
-      return { type: "string", value: `${formatTextValues(a)}-${formatTextValues(b)}` };
+      const ra = formatTextValues(a);
+      const rb = formatTextValues(b);
+
+      return {
+        type: "sequence",
+        values: [
+          ra,
+          { type: "string", value: "-" },
+          rb
+        ]
+      };
     }), 
     { type: "string", value: ", " }
   )
@@ -385,100 +396,7 @@ const defaultTemplate = periods(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-console.log(defaultTemplate);
-
-/**
- * Default order for fields to include
- * when rendering the bibliography.
- */
-const defaultFieldOrder = [
-  // "abstract",
-  // "addendum",
-  // "annotation",
-  // "keywords",
-  // "mainsubtitle",
-  // "maintitle",
-  // "maintitleaddon",
-
-  "author",     // l_name
-
-  "title",
-  "subtitle",
-
-  "journaltitle",
-  "journalsubtitle",
-
-  "location",
-  "venue",
-
-  "date",
-
-  "version",
-  "howpublished",
-  
-  "note",
-  "afterword",  // l_name
-  "annotator",  // l_name
-  "foreword", // l_name
-  "holder", // l_name
-  "introduction", // l_name
-  "translator", // l_name
-
-
-  "volume", // volume(issue)
-  "volumes",
-  
-  "series",
-  "issue", // non-number issue
-  // "issuesubtitle",
-  // "issuetitle",
-
-
-
-  "bookpagination",
-  "booksubtitle",
-  "bookauthor", // l_name
-  "booktitle",
-  "booktitleaddon",
-  
-  "chapter",
-  "commentator",
-  "doi",
-  "edition",
-  "editor",
-  "eid", // electronic id
-  "eventdate",
-  "eventtitle",
-  "institution", // org
-  "organization", // org
-  
-  "isan", // id
-  "isbn", // id
-  "ismn", // id
-  "isrn", // id
-  "issn", // id
-
-
-  "label",
-  "language",
-
-  "number",
-  "pages",
-  "pagetotal",
-  "pagination",
-  "part",
-  "publisher",
-  "pubstate",
-  "reprinttitle",
-  "shorttitle",
-  "titleaddon",
-  "url",
-  "urldate",
-];
-
-////////////////////////////////////////////////////////////////////////////////
-
-export const formatterDefault: Formatter = (entry: EntryObject) => {
+export const formatterDefault: Formatter = (_entry: EntryObject) => {
   // const title = optional(entry.fields.title, title =>
   //   span("field-title", [link("url", "", [text(formatTextValues(title))])])
   // );
@@ -491,7 +409,7 @@ export const formatterDefault: Formatter = (entry: EntryObject) => {
   return [];
 }
 
-export const formatterBase: Formatter = (entry: EntryObject) => {
+export const formatterBase: Formatter = (_entry: EntryObject) => {
   // const title = optional(entry.fields.title, title =>
   //   span("field-title", [link("url", "", [text(formatTextValues(title))])])
   // );
@@ -508,8 +426,6 @@ export const formatter = (entry: EntryObject): HastElement => {
   console.log(entry.entry_key, entry.bib_type);
 
   const result = evalTemplate(entry, defaultTemplate);
-
-  console.log(result);
 
   if(result === null) {
     return {

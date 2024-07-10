@@ -3,13 +3,13 @@
 import type { Root, Element as HastElement} from "hast";
 import type { VFile } from "vfile";
 
-import { CONTINUE, EXIT, SKIP, visit, VisitorResult } from 'unist-util-visit';
+import { CONTINUE, SKIP, visit, VisitorResult } from 'unist-util-visit';
 import { CiteItem } from "@benrbray/mdast-util-cite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 import { BibLatexParser } from "biblatex-csl-converter"
-import { EntryObject, Formatter } from "./types";
+import { EntryObject } from "./types";
 import { formatter } from "./formatter/default";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,11 +36,11 @@ export function rehypeCite(options: RehypeCiteOptions) {
   console.log(bibEntries);
   /* ---------------------------------------------------- */
 
-  const getEntry = (key: string): EntryObject | null => {
-    return bibEntries.find(entry => entry.entry_key === key) || null;
-  }
+  // const getEntry = (key: string): EntryObject | null => {
+  //   return bibEntries.find(entry => entry.entry_key === key) || null;
+  // }
 
-  const processBibliography = (citeItems: CiteItem[]): HastElement => {
+  const processBibliography = (_citeItems: CiteItem[]): HastElement => {
     const formattedEntries = bibEntries.map(e => formatEntry(e ));
 
     const biblioTitle: HastElement = {
@@ -63,7 +63,7 @@ export function rehypeCite(options: RehypeCiteOptions) {
   const processInlineCite = (
     citeItems: CiteItem[],
     element: HastElement,
-    parent: HastElement | Root | undefined
+    _parent: HastElement | Root | undefined
   ) => {
     const entryIds = citeItems.map(ci => ci.key);
     element.children = [{ type: "text", value: entryIds.join("; ") }];
@@ -71,10 +71,10 @@ export function rehypeCite(options: RehypeCiteOptions) {
 
   /* ---- transform ------------------------------------- */
 
-  return function(tree: Root, file: VFile): undefined {
+  return function(tree: Root, _file: VFile): undefined {
     let citations: CiteItem[] = [];
 
-    visit(tree, 'element', function(element, index, parent): VisitorResult {
+    visit(tree, 'element', function(element, _index, parent): VisitorResult {
       // look for elements marked with "cite-inline" class
       const classes = Array.isArray(element.properties.className)
         ? element.properties.className
