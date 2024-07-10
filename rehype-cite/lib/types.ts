@@ -70,9 +70,16 @@ type ExtractCompatible<R extends object, C> = keyof {
 
 type NameFields = ExtractCompatible<BibFieldTypes, {type: "l_name"}>;
 
-type FieldValueMap = {
+export type FieldValueMap = {
   "date" : string,
-  "url" : string
+  "url" : string,
+  "location" : TextValue[][],
+
+  "publisher" : TextValue[][],
+  "organization" : TextValue[][],
+  "institution" : TextValue[][],
+  
+  "pages" : [TextValue[], TextValue[]][]
 } & { [F in NameFields] : NameValue[] };
 
 type FieldValue<K> = K extends keyof FieldValueMap ? FieldValueMap[K] : TextValue[];
