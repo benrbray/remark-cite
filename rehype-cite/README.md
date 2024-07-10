@@ -1,28 +1,28 @@
+# `rehype-cite`
+
+The `rehype-cite` package is a `rehype` plugin adding support for inline citations and bibliographies.
+
+For now, `rehype-cite` is not capable of producing citations that adhere strictly to well-known bibliography formats like APA, MLA, IEEE, etc..  You should only use `rehype-cite` in non-academic contexts like blog posts or note-taking.
+
+> [!IMPORTANT]
+> If you have strict formatting requirements, consider using [rehype-citation](https://github.com/timlrx/rehype-citation) or [citeproc-js](https://citeproc-js.readthedocs.io/en/latest/) instead, for compatibility with the [Citation Style Language](https://citationstyles.org/).
+
+## Installation
+
 ## Usage
 
-```bash
-$ npm install # or pnpm install or yarn install
-```
+## Goals
 
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
+When using `rehype-cite`, you will quickly notice that the citations produced by `rehype-cite` do not adhere to any standard citation format (such as APA, MLA, Harvard, etc.).  
 
-## Available Scripts
+Existing JavaScript libraries for citation rendering (such as [`citation-js`]() and [`citeproc-js`](https://citeproc-js.readthedocs.io/en/latest/)) support a great many citation styles in [CSL format](https://citationstyles.org/), but unfortunately are designed to produce only *strings* rather than structured output like HTML or JSON.  This makes it difficult to add interactivity such as hyperlinked titles to bibliography entries.
 
-In the project directory, you can run:
+Instead, `rehype-cite` includes a custom formatter which produces **structured output** convenient for styling, hyperlinking, and further postprocessing of bibliography data.  The final citations are "good enough" for use in contexts like blog posts or personal notes, but should **not** be used in formal academic contexts.
 
-### `npm run dev`
+## Writing a Custom Formatter
 
-Runs the app in the development mode.<br>
-Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
+In addition to the built-in formatter, `rehype-cite` includes a DSL for writing new formatters.
 
-### `npm run build`
+## Resources
 
-Builds the app for production to the `dist` folder.<br>
-It correctly bundles Solid in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-## Deployment
-
-Learn more about deploying your application with the [documentations](https://vitejs.dev/guide/static-deploy.html)
+* [BibLaTeX Cheat Sheet](https://tug.ctan.org/info/biblatex-cheatsheet/biblatex-cheatsheet.pdf)

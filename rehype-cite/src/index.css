@@ -65,14 +65,3 @@ body {
 .result-html .bib-entry {
   margin: 0.5em 0;
 }
-
-.bib-entry .field-title {
-  font-weight: bold;
-}
-
-.bib-entry .field-journaltitle,
-.bib-entry .field-issuetitle,
-.bib-entry .field-maintitle,
-.bib-entry .field-booktitle {
-  font-style: italic;
-}
