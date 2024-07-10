@@ -15,7 +15,7 @@ importers:
   mdast-util-cite:
     dependencies:
       '@benrbray/micromark-extension-cite':
-        specifier: workspace:^2.0.0-alpha.0
+        specifier: workspace:^2.0.1-alpha.0
         version: link:../micromark-extension-cite
     devDependencies:
       '@types/mdast':
@@ -89,10 +89,10 @@ importers:
   rehype-cite:
     dependencies:
       '@benrbray/mdast-util-cite':
-        specifier: workspace:^2.0.0-alpha.0
+        specifier: workspace:^2.0.1-alpha.0
         version: link:../mdast-util-cite
       '@benrbray/remark-cite':
-        specifier: workspace:^2.0.0-alpha.0
+        specifier: workspace:^2.0.1-alpha.0
         version: link:../remark-cite
       biblatex-csl-converter:
         specifier: ^2.1.0
@@ -168,10 +168,10 @@ importers:
   remark-cite:
     dependencies:
       '@benrbray/mdast-util-cite':
-        specifier: workspace:^2.0.0-alpha.0
+        specifier: workspace:^2.0.1-alpha.0
         version: link:../mdast-util-cite
       '@benrbray/micromark-extension-cite':
-        specifier: workspace:^2.0.0-alpha.0
+        specifier: workspace:^2.0.1-alpha.0
         version: link:../micromark-extension-cite
     devDependencies:
       '@types/mdast':
