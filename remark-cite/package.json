@@ -1,6 +1,6 @@
 {
   "name": "@benrbray/remark-cite",
-  "version": "2.0.1-alpha.1",
+  "version": "2.0.1-alpha.0",
   "license": "MIT",
   "description": "A `remark` plugin for pandoc-style citations.",
   "repository": {
@@ -37,11 +37,11 @@
     "pretest": "pnpm run clean; pnpm run build",
     "preview": "vite preview",
     "test": "vitest",
-    "publish-package": "pnpm publish"
+    "publish-pnpm": "pnpm publish"
   },
   "dependencies": {
-    "@benrbray/mdast-util-cite": "workspace:^2.0.1-alpha.1",
-    "@benrbray/micromark-extension-cite": "workspace:^2.0.1-alpha.1"
+    "@benrbray/mdast-util-cite": "workspace:^2.0.1-alpha.0",
+    "@benrbray/micromark-extension-cite": "workspace:^2.0.1-alpha.0"
   },
   "devDependencies": {
     "@types/mdast": "^4.0.4",
