@@ -12,6 +12,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
 
     /* Linting */
     "strict": true,
@@ -21,11 +23,8 @@
 
     "paths" : {
       "@lib/*" : ["./lib/*"]
-    },
-    "typeRoots": [
-      "./node_modules/@types",
-      "./types"
-    ]
+    }
   },
-  "include": ["src", "lib", "test", "types"],
+  "include": ["src", "lib"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
