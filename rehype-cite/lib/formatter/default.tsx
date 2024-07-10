@@ -295,9 +295,6 @@ const evalTemplate = (entry: EntryObject, template: Template): EvalResult|null =
   // marks
   if(template.type === "link") {
     const resultHref = evalTemplate(entry, template.href);
-
-    console.log("resultHref", resultHref, resultHref && renderResultString(resultHref));
-
     const resultBody = evalTemplate(entry, template.part);
 
     if(resultBody === null) { return null; }
@@ -338,6 +335,7 @@ const defaultTemplate = periods(
     link(
       field("url"),
       oneof(
+        join(field("maintitle"), ": ", field("subtitle")),
         join(field("title"), ": ", field("subtitle")),
         field("title")
       )
@@ -347,21 +345,17 @@ const defaultTemplate = periods(
         "In ",
         oneof(
           join(field("journaltitle"), ": ", field("journalsubtitle")),
-          field("journaltitle")
-        ),
-        optional(join(" (Vol. ", field("volume"), ")")),
-        optional(join(", ", field("pages")))
-      ),
-      join(
-        "In ",
-        oneof(
+          field("journaltitle"),
+          join(field("booktitle"), ": ", field("booksubtitle")),
+          field("booktitle"),
           join(field("issuetitle"), ": ", field("issuesubtitle")),
-          field("issuetitle")
+          field("issuetitle"),
+          field("maintitle")
         ),
         oneof(
-          join("(Vol. ", field("volume"), ", ", field("pages"), ")"),
-          join("(Vol. ", field("volume"), ")"),
-          field("pages")
+          join(" (Vol. ", field("volume"), ", ", field("pages"), ")"),
+          join(" (Vol. ", field("volume"), ")"),
+          join(", ", field("pages"))
         )
       ),
       oneof(
