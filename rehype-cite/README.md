@@ -9,7 +9,35 @@ For now, `rehype-cite` is not capable of producing citations that adhere strictl
 
 ## Installation
 
+```bash
+npm install @benrbray/rehype-cite
+```
+
 ## Usage
+
+```typescript
+const bibFile = `
+@book{riehl2017:category,
+  title={Category theory in context},
+  author={Riehl, Emily},
+  year={2017},
+  publisher={Courier Dover Publications},
+  url={https://store.doverpublications.com/048680903x.html}
+}
+`;
+
+const processor = unified()
+  .use(remarkParse)
+  .use(remarkMath)
+  .use(remarkCite)
+  .use(remarkRehype)
+  .use(rehypeKatex)
+  .use(rehypeCite, { bibFiles : [bibFile] })
+  .use(rehypeStringify);
+
+const markdown = "[@riehl2017:category]";
+const result: string = processor.processSync(markdown).toString();
+```
 
 ## Goals
 
@@ -19,7 +47,7 @@ Existing JavaScript libraries for citation rendering (such as [`citation-js`]() 
 
 Instead, `rehype-cite` includes a custom formatter which produces **structured output** convenient for styling, hyperlinking, and further postprocessing of bibliography data.  The final citations are "good enough" for use in contexts like blog posts or personal notes, but should **not** be used in formal academic contexts.
 
-## Writing a Custom Formatter
+## Writing a Custom Formatter (*experimental*)
 
 In addition to the built-in formatter, `rehype-cite` includes a DSL for writing new formatters.
 

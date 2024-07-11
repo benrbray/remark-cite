@@ -57,11 +57,25 @@ body {
 
 /* ------------------------------------------------------ */
 
-.result-html .biblio-title {
+.result-html .bib-title {
   font-weight: bold;
   font-size: 1.2em;
 }
 
 .result-html .bib-entry {
-  margin: 0.5em 0;
+  margin: 1.0em 0;
+}
+
+.result-html .bib-entry {
+  display: flex;
+  flex-direction: row;
+}
+
+.result-html .bib-entry .bib-id {
+  flex: 0;
+  flex-basis: 2.5em;
+}
+
+.result-html .bib-entry .cite-bib {
+  flex: 1;
 }

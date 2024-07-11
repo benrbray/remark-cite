@@ -1,6 +1,6 @@
 /** @jsxImportSource hastscript */
 
-import { EntryObject, FieldValueMap, Formatter, HastElement, NameValue, TextValue } from "@lib/types";
+import { EntryObject, FieldValueMap, HastElement, NameValue, TextValue } from "@lib/types";
 import { ElementContent } from "hast";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,6 +20,7 @@ import { ElementContent } from "hast";
 //   "forward",
 //   "afterword",
 //   "annotator",
+//   "label",
 // ];
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,6 @@ type Template
   | { type: "join-periods", parts: Template[] }
   | { type: "link", href: Template, part: Template }
   | { type: "oneof", templates: Template[] }
-  | { type: "debug", template: Template }
 
 const field   = (field: string): Template => ({
   type: "field",
@@ -66,12 +66,6 @@ const oneof = (...templates: Template[]): Template => ({
   type: "oneof",
   templates
 });
-
-// const debug = (template: Template): Template => ({
-//   type: "debug",
-//   template
-// });
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -171,7 +165,7 @@ type EvalResult
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const renderResult = (result: EvalResult): ElementContent[] => {
+const renderResultHast = (result: EvalResult): ElementContent[] => {
   if(result.type === "empty") { return []; }
   if(result.type === "string") { return [{ type: "text", value: result.value }]; }
   if(result.type === "field") {
@@ -179,18 +173,18 @@ const renderResult = (result: EvalResult): ElementContent[] => {
       type: "element",
       tagName: "span",
       properties: { className: `field-${result.field}` },
-      children: result.values.flatMap(renderResult)
+      children: result.values.flatMap(renderResultHast)
     }];
   }
   if(result.type === "sequence") {
-    return result.values.flatMap(renderResult);
+    return result.values.flatMap(renderResultHast);
   }
   if(result.type === "group") {
     return [{
       type: "element",
       tagName: "div",
       properties: { className: `group-${result.group}` },
-      children: result.values.flatMap(renderResult)
+      children: result.values.flatMap(renderResultHast)
     }];
   }
   if(result.type === "link") {
@@ -198,7 +192,7 @@ const renderResult = (result: EvalResult): ElementContent[] => {
       type: "element",
       tagName: "a",
       properties: { className: `link`, href: result.href },
-      children: result.values.flatMap(renderResult)
+      children: result.values.flatMap(renderResultHast)
     }];
   }
 
@@ -258,12 +252,6 @@ const evalOptional = (entry: EntryObject, part: Template): EvalResult => {
   else { return { type: "empty" }; }
 }
 
-const evalDebug = (entry: EntryObject, template: Template): EvalResult|null => {
-  const result = evalTemplate(entry, template);
-  console.log("debug", result);
-  return result;
-}
-
 const evalJoin = (entry: EntryObject, separator: string, parts: Template[]): EvalResult|null => {
   const evalParts = parts.map(t => {
     return evalTemplate(entry, t)
@@ -319,10 +307,6 @@ const evalTemplate = (entry: EntryObject, template: Template): EvalResult|null =
         values: [resultBody]
       }
     }
-  }
-
-  if(template.type === "debug") {
-    return evalDebug(entry, template.template);
   }
 
   return assertNever(template);
@@ -396,50 +380,30 @@ const defaultTemplate = periods(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export const formatterDefault: Formatter = (_entry: EntryObject) => {
-  // const title = optional(entry.fields.title, title =>
-  //   span("field-title", [link("url", "", [text(formatTextValues(title))])])
-  // );
-  // const date = optional(entry.fields.date, date =>
-  //   span("field-date", [text(date)])
-  // );
-
-  // return [title, date];
-
-  return [];
-}
-
-export const formatterBase: Formatter = (_entry: EntryObject) => {
-  // const title = optional(entry.fields.title, title =>
-  //   span("field-title", [link("url", "", [text(formatTextValues(title))])])
-  // );
-  // const date = optional(entry.fields.date, date =>
-  //   span("field-date", [text(date)])
-  // );
-
-  // return [title, date];
-
-  return [];
-}
-
 export const formatter = (entry: EntryObject): HastElement => {
-  console.log(entry.entry_key, entry.bib_type);
-
   const result = evalTemplate(entry, defaultTemplate);
 
   if(result === null) {
     return {
       type: "element",
       tagName: "div",
-      properties: { className: "bib-entry error" },
+      properties: { className: "cite-bib error" },
       children: [{ type: "text", value: "error" }]
     };
   } else {
     return {
       type: "element",
       tagName: "div",
-      properties: { className: "bib-entry" },
-      children: renderResult(result)
+      properties: { className: "cite-bib" },
+      children: renderResultHast(result)
     };
   }
+}
+
+export const formatBibString = (entry: EntryObject): string|null => {
+  const result = evalTemplate(entry, defaultTemplate);
+
+  if(result === null) { return null; }
+
+  return renderResultString(result);
 }

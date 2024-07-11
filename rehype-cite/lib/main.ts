@@ -1,6 +1,6 @@
 /** @jsxImportSource hastscript */
 
-import type { Root, Element as HastElement} from "hast";
+import type { Root, Element as HastElement, ElementContent} from "hast";
 import type { VFile } from "vfile";
 
 import { CONTINUE, SKIP, visit, VisitorResult } from 'unist-util-visit';
@@ -10,12 +10,18 @@ import { CiteItem } from "@benrbray/mdast-util-cite";
 
 import { BibLatexParser } from "biblatex-csl-converter"
 import { EntryObject } from "./types";
-import { formatter } from "./formatter/default";
+import { formatter, formatBibString } from "./formatter/default";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const formatEntry = (entry: EntryObject): HastElement => {
   return formatter(entry);
+}
+
+type FormattedCitation = {
+  order: number,
+  citeId: HastElement,
+  citeBib: HastElement
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,27 +32,48 @@ export type RehypeCiteOptions = {
 
 export function rehypeCite(options: RehypeCiteOptions) {
 
-  // const references = new Cite(options.bibFiles);
-
   // biblatex-csl-converter
   let inputBib = options.bibFiles.join("\n\n");
   let parser = new BibLatexParser(inputBib, {processUnexpected: true, processUnknown: true})
   let bibJson = parser.parse();
   let bibEntries = Object.values(bibJson.entries) as EntryObject[];
-  console.log(bibEntries);
+
   /* ---------------------------------------------------- */
 
-  // const getEntry = (key: string): EntryObject | null => {
-  //   return bibEntries.find(entry => entry.entry_key === key) || null;
-  // }
+  const getEntry = (key: string): EntryObject | null => {
+    return bibEntries.find(entry => entry.entry_key === key) || null;
+  }
 
-  const processBibliography = (_citeItems: CiteItem[]): HastElement => {
-    const formattedEntries = bibEntries.map(e => formatEntry(e ));
+  const processBibliography = (
+    formatted: Partial<Record<string, FormattedCitation>>,
+  ): HastElement => {
+    const sorted = Object.entries(formatted).sort(([_k1, f1], [_k2, f2]) => { return f1!.order - f2!.order; });
+    
+    const formattedEntries: ElementContent[] = sorted.map(([_citeKey, fmt]) => {
+      return {
+        type: "element",
+        tagName: "div",
+        properties: { className: "bib-entry" },
+        children: [
+          {
+            type: "element",
+            tagName: "div",
+            properties: { className: "bib-id" },
+            children: [
+              { type: "text", value: "[" },
+              fmt!.citeId,
+              { type: "text", value: "]" }
+            ]
+          },
+          fmt!.citeBib
+        ]
+      }
+    });
 
     const biblioTitle: HastElement = {
       type: "element",
       tagName: "div",
-      properties: { "className" : "biblio-title" },
+      properties: { "className" : "bib-title" },
       children: [{ type: "text", value: "Bibliography" }]
     };
 
@@ -54,27 +81,106 @@ export function rehypeCite(options: RehypeCiteOptions) {
       type: "element",
       tagName: "div",
       properties: {},
-      children: [biblioTitle, ...formattedEntries]
+      children: [biblioTitle, {
+        type: "element",
+        tagName: "div",
+        properties: { className: "bib-entry-list" },
+        children: formattedEntries
+    }]
     }
   }
 
   // replaces the placeholder inline citation produced by remark-cite
   // with a nicely-formatted html produced by citeproc-js
   const processInlineCite = (
+    formatted: Partial<Record<string, FormattedCitation>>,
     citeItems: CiteItem[],
-    element: HastElement,
-    _parent: HastElement | Root | undefined
+    element: HastElement
   ) => {
-    const entryIds = citeItems.map(ci => ci.key);
-    element.children = [{ type: "text", value: entryIds.join("; ") }];
+    const entryIds: ElementContent[] = citeItems.map(ci => {
+      const id = formatted[ci.key];
+      if(id) { return id.citeId; }
+      return { type: "text", value: `${ci.key}` };
+    });
+
+    element.children = [
+      { type: "text", value: "["},
+      ...entryIds.flatMap((e,i): ElementContent[] => {
+        if(i === 0) { return [e]; }
+        return [{ type: "text", value: ", " }, e];
+      }),
+      { type: "text", value: "]"},
+    ];
+  }
+
+  /**
+   * Renders inline citations and bibliography entries for the given keys.
+   */
+  const formatCitations = (citeKeys: string[]): Partial<Record<string, FormattedCitation>> => {
+    const result: Partial<Record<string, FormattedCitation>> = {};
+
+    citeKeys.forEach((key, idx) => {
+      // skip if this key has already been rendered
+      if(key in result) { return; }
+
+      // handle missing entries
+      const citeEntry = getEntry(key);
+      if(!citeEntry) {
+        const citeId: HastElement = {
+          type: "element",
+          tagName: "span",
+          properties: { className: "bib-id" },
+          children: [{ type: "text", value: `${idx}` }]
+        };
+        const citeBib: HastElement = {
+          type: "element",
+          tagName: "div",
+          properties: { className: "bib-error" },
+          children: [{ type: "text", value: `${key}` }]
+        };
+
+        result[key] = {
+          order: idx,
+          citeId,
+          citeBib
+        };
+
+        return;
+      }
+
+      // render full bibliography entry
+      const citeBibString = formatBibString(citeEntry);
+
+      const citeId: HastElement = {
+        type: "element",
+        tagName: "span",
+        properties: {
+          className: "bib-id",
+          title: citeBibString
+        },
+        children: [{ type: "text", value: `${idx}` }]
+      };
+
+      const citeBibHast: HastElement = formatEntry(citeEntry);
+
+      result[key] = {
+        order: idx,
+        citeId,
+        citeBib: citeBibHast
+      };
+    });
+
+    return result;
   }
 
   /* ---- transform ------------------------------------- */
 
   return function(tree: Root, _file: VFile): undefined {
     let citations: CiteItem[] = [];
+    let citationsInline: { element: HastElement, citeItems: CiteItem[] }[] = [];
 
-    visit(tree, 'element', function(element, _index, parent): VisitorResult {
+    // traverse the hast syntax tree and collect all cite-inline nodes
+    visit(tree, 'element', function(element, _index): VisitorResult {
       // look for elements marked with "cite-inline" class
       const classes = Array.isArray(element.properties.className)
         ? element.properties.className
@@ -87,17 +193,25 @@ export function rehypeCite(options: RehypeCiteOptions) {
       if(!citeData) { return CONTINUE; }
       if(typeof citeData !== "string") { return CONTINUE; }
 
-      const citeItem = JSON.parse(citeData) as CiteItem[];
-      citations = citations.concat(citeItem);
+      const citeItems = JSON.parse(citeData) as CiteItem[];
+      citations = citations.concat(citeItems);
 
-      // create inline citation
-      processInlineCite(citeItem, element, parent);
+      citationsInline.push({ element, citeItems });
 
       return SKIP;
     });
 
+    // generate inline citations and bibliography entries for all mentioned keys
+    let formatted = formatCitations(citations.map(c => c.key));
+
+    // insert inline citations into the hast tree
+    citationsInline.forEach(({ element, citeItems }) => {
+      processInlineCite(formatted, citeItems, element);
+    });
+
+    // append the bibliography to the hast tree
     if(citations.length > 0 ) {
-      const biblioElement = processBibliography(citations);
+      const biblioElement = processBibliography(formatted);
       tree.children.push(
         biblioElement
       );
