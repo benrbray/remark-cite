@@ -1,5 +1,3 @@
-/** @jsxImportSource hastscript */
-
 import { EntryObject, FieldValueMap, HastElement, NameValue, TextValue } from "@lib/types";
 import { ElementContent } from "hast";
 
