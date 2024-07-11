@@ -1,6 +1,6 @@
 {
   "name": "@benrbray/rehype-cite",
-  "version": "2.0.1-alpha.1",
+  "version": "2.0.1-alpha.3",
   "license": "MIT",
   "description": "A `rehype` plugin for rendering citations and bibliographies.",
   "repository": {
