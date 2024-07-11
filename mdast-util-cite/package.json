@@ -40,7 +40,7 @@
     "publish-pnpm": "pnpm publish"
   },
   "dependencies": {
-    "@benrbray/micromark-extension-cite": "workspace:^2.0.1-alpha.1"
+    "@benrbray/micromark-extension-cite": "workspace:*"
   },
   "devDependencies": {
     "@types/mdast": "^4.0.4",
