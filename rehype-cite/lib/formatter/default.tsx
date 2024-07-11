@@ -20,6 +20,7 @@ import { ElementContent } from "hast";
 //   "forward",
 //   "afterword",
 //   "annotator",
+//   "label",
 // ];
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,6 @@ type Template
   | { type: "join-periods", parts: Template[] }
   | { type: "link", href: Template, part: Template }
   | { type: "oneof", templates: Template[] }
-  | { type: "debug", template: Template }
 
 const field   = (field: string): Template => ({
   type: "field",
@@ -66,12 +66,6 @@ const oneof = (...templates: Template[]): Template => ({
   type: "oneof",
   templates
 });
-
-// const debug = (template: Template): Template => ({
-//   type: "debug",
-//   template
-// });
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -321,10 +315,6 @@ const evalTemplate = (entry: EntryObject, template: Template): EvalResult|null =
     }
   }
 
-  if(template.type === "debug") {
-    return evalDebug(entry, template.template);
-  }
-
   return assertNever(template);
 }
 
@@ -396,49 +386,21 @@ const defaultTemplate = periods(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export const formatterDefault: Formatter = (_entry: EntryObject) => {
-  // const title = optional(entry.fields.title, title =>
-  //   span("field-title", [link("url", "", [text(formatTextValues(title))])])
-  // );
-  // const date = optional(entry.fields.date, date =>
-  //   span("field-date", [text(date)])
-  // );
-
-  // return [title, date];
-
-  return [];
-}
-
-export const formatterBase: Formatter = (_entry: EntryObject) => {
-  // const title = optional(entry.fields.title, title =>
-  //   span("field-title", [link("url", "", [text(formatTextValues(title))])])
-  // );
-  // const date = optional(entry.fields.date, date =>
-  //   span("field-date", [text(date)])
-  // );
-
-  // return [title, date];
-
-  return [];
-}
-
 export const formatter = (entry: EntryObject): HastElement => {
-  console.log(entry.entry_key, entry.bib_type);
-
   const result = evalTemplate(entry, defaultTemplate);
 
   if(result === null) {
     return {
       type: "element",
       tagName: "div",
-      properties: { className: "bib-entry error" },
+      properties: { className: "cite-bib error" },
       children: [{ type: "text", value: "error" }]
     };
   } else {
     return {
       type: "element",
       tagName: "div",
-      properties: { className: "bib-entry" },
+      properties: { className: "cite-bib" },
       children: renderResult(result)
     };
   }
