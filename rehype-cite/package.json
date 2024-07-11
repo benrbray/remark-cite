@@ -1,6 +1,5 @@
 {
   "name": "rehype-cite",
-  "private": true,
   "version": "2.0.1-alpha.1",
   "type": "module",
   "scripts": {
