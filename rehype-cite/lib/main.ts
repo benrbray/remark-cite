@@ -10,7 +10,7 @@ import { CiteItem } from "@benrbray/mdast-util-cite";
 
 import { BibLatexParser } from "biblatex-csl-converter"
 import { EntryObject } from "./types";
-import { formatter } from "./formatter/default";
+import { formatter, formatBibString } from "./formatter/default";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,9 +47,9 @@ export function rehypeCite(options: RehypeCiteOptions) {
   const processBibliography = (
     formatted: Partial<Record<string, FormattedCitation>>,
   ): HastElement => {
-    const sorted = Object.entries(formatted).sort(([k1, f1], [k2, f2]) => { return f1!.order - f2!.order; });
+    const sorted = Object.entries(formatted).sort(([_k1, f1], [_k2, f2]) => { return f1!.order - f2!.order; });
     
-    const formattedEntries: ElementContent[] = sorted.map(([citeKey, fmt]) => {
+    const formattedEntries: ElementContent[] = sorted.map(([_citeKey, fmt]) => {
       return {
         type: "element",
         tagName: "div",
@@ -100,7 +100,7 @@ export function rehypeCite(options: RehypeCiteOptions) {
     const entryIds: ElementContent[] = citeItems.map(ci => {
       const id = formatted[ci.key];
       if(id) { return id.citeId; }
-      return { type: "text", value: "" };
+      return { type: "text", value: `${ci.key}` };
     });
 
     element.children = [
@@ -120,34 +120,54 @@ export function rehypeCite(options: RehypeCiteOptions) {
     const result: Partial<Record<string, FormattedCitation>> = {};
 
     citeKeys.forEach((key, idx) => {
+      // skip if this key has already been rendered
       if(key in result) { return; }
 
-      // render inline citation
-      const citeId: HastElement = {
-        type: "element",
-        tagName: "span",
-        properties: { className: "bib-id" },
-        children: [{ type: "text", value: `${idx}` }]
-      };
-
-      // render bibliography entry
+      // handle missing entries
       const citeEntry = getEntry(key);
+      if(!citeEntry) {
+        const citeId: HastElement = {
+          type: "element",
+          tagName: "span",
+          properties: { className: "bib-id" },
+          children: [{ type: "text", value: `${idx}` }]
+        };
+        const citeBib: HastElement = {
+          type: "element",
+          tagName: "div",
+          properties: { className: "bib-error" },
+          children: [{ type: "text", value: `${key}` }]
+        };
 
-      if(citeEntry) {
-        const citeBib = formatEntry(citeEntry);
-        result[key] = { order: idx, citeId, citeBib };
-      } else {
         result[key] = {
           order: idx,
           citeId,
-          citeBib: {
-            type: "element",
-            tagName: "div",
-            properties: { className: "bib-entry" },
-            children: [{ type: "text", value: `no bibliography entry found for key [${key}]` }]
-          }
+          citeBib
         };
+
+        return;
       }
+
+      // render full bibliography entry
+      const citeBibString = formatBibString(citeEntry);
+
+      const citeId: HastElement = {
+        type: "element",
+        tagName: "span",
+        properties: {
+          className: "bib-id",
+          title: citeBibString
+        },
+        children: [{ type: "text", value: `${idx}` }]
+      };
+
+      const citeBibHast: HastElement = formatEntry(citeEntry);
+
+      result[key] = {
+        order: idx,
+        citeId,
+        citeBib: citeBibHast
+      };
     });
 
     return result;

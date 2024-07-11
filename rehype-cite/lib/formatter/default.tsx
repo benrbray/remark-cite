@@ -1,6 +1,6 @@
 /** @jsxImportSource hastscript */
 
-import { EntryObject, FieldValueMap, Formatter, HastElement, NameValue, TextValue } from "@lib/types";
+import { EntryObject, FieldValueMap, HastElement, NameValue, TextValue } from "@lib/types";
 import { ElementContent } from "hast";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -165,7 +165,7 @@ type EvalResult
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const renderResult = (result: EvalResult): ElementContent[] => {
+const renderResultHast = (result: EvalResult): ElementContent[] => {
   if(result.type === "empty") { return []; }
   if(result.type === "string") { return [{ type: "text", value: result.value }]; }
   if(result.type === "field") {
@@ -173,18 +173,18 @@ const renderResult = (result: EvalResult): ElementContent[] => {
       type: "element",
       tagName: "span",
       properties: { className: `field-${result.field}` },
-      children: result.values.flatMap(renderResult)
+      children: result.values.flatMap(renderResultHast)
     }];
   }
   if(result.type === "sequence") {
-    return result.values.flatMap(renderResult);
+    return result.values.flatMap(renderResultHast);
   }
   if(result.type === "group") {
     return [{
       type: "element",
       tagName: "div",
       properties: { className: `group-${result.group}` },
-      children: result.values.flatMap(renderResult)
+      children: result.values.flatMap(renderResultHast)
     }];
   }
   if(result.type === "link") {
@@ -192,7 +192,7 @@ const renderResult = (result: EvalResult): ElementContent[] => {
       type: "element",
       tagName: "a",
       properties: { className: `link`, href: result.href },
-      children: result.values.flatMap(renderResult)
+      children: result.values.flatMap(renderResultHast)
     }];
   }
 
@@ -250,12 +250,6 @@ const evalOptional = (entry: EntryObject, part: Template): EvalResult => {
 
   if(result !== null) { return result; }
   else { return { type: "empty" }; }
-}
-
-const evalDebug = (entry: EntryObject, template: Template): EvalResult|null => {
-  const result = evalTemplate(entry, template);
-  console.log("debug", result);
-  return result;
 }
 
 const evalJoin = (entry: EntryObject, separator: string, parts: Template[]): EvalResult|null => {
@@ -401,7 +395,15 @@ export const formatter = (entry: EntryObject): HastElement => {
       type: "element",
       tagName: "div",
       properties: { className: "cite-bib" },
-      children: renderResult(result)
+      children: renderResultHast(result)
     };
   }
+}
+
+export const formatBibString = (entry: EntryObject): string|null => {
+  const result = evalTemplate(entry, defaultTemplate);
+
+  if(result === null) { return null; }
+
+  return renderResultString(result);
 }
