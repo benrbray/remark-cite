@@ -89,7 +89,7 @@ importers:
   rehype-cite:
     dependencies:
       '@benrbray/remark-cite':
-        specifier: workspace:^2.0.1-alpha.1
+        specifier: workspace:^2.0.1-alpha.2
         version: link:../remark-cite
       biblatex-csl-converter:
         specifier: ^2.1.0
@@ -100,10 +100,10 @@ importers:
       unist-util-visit:
         specifier: ^5.0.0
         version: 5.0.0
-      unist-util-visit-parents:
-        specifier: ^6.0.1
-        version: 6.0.1
     devDependencies:
+      '@benrbray/mdast-util-cite':
+        specifier: workspace:^2.0.1-alpha.1
+        version: link:../mdast-util-cite
       '@types/hast':
         specifier: ^3.0.4
         version: 3.0.4
@@ -113,6 +113,9 @@ importers:
       dedent-js:
         specifier: ^1.0.1
         version: 1.0.1
+      del-cli:
+        specifier: ^5.1.0
+        version: 5.1.0
       katex:
         specifier: ^0.16.10
         version: 0.16.10
@@ -152,6 +155,9 @@ importers:
       vite:
         specifier: ^5.2.0
         version: 5.3.1(@types/node@20.14.2)
+      vite-plugin-dts:
+        specifier: ^3.9.1
+        version: 3.9.1(@types/node@20.14.2)(rollup@4.18.0)(typescript@5.4.5)(vite@5.3.1(@types/node@20.14.2))
       vite-plugin-solid:
         specifier: ^2.10.2
         version: 2.10.2(solid-js@1.8.17)(vite@5.3.1(@types/node@20.14.2))

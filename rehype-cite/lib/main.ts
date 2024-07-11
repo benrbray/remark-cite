@@ -4,7 +4,7 @@ import type { Root, Element as HastElement, ElementContent} from "hast";
 import type { VFile } from "vfile";
 
 import { CONTINUE, SKIP, visit, VisitorResult } from 'unist-util-visit';
-import { CiteItem } from "@benrbray/mdast-util-cite";
+import type { CiteItem } from "@benrbray/mdast-util-cite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
