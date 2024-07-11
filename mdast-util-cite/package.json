@@ -1,6 +1,6 @@
 {
   "name": "@benrbray/mdast-util-cite",
-  "version": "2.0.1-alpha.1",
+  "version": "2.0.1-alpha.4",
   "license": "MIT",
   "description": "Converts a `micromark` token stream into an `mdast` syntax tree.",
   "repository": {
