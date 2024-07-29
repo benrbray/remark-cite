@@ -1,5 +1,7 @@
 import { createSignal } from "solid-js";
 
+import { removePosition } from "unist-util-remove-position";
+
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import remarkCite from "@benrbray/remark-cite";
@@ -42,10 +44,17 @@ export const Demo = () => {
   const [markdown, setMarkdown] = createSignal(initialMarkdown);
   const [_bibtex, setBibtex] = createSignal(initialBibtex);
 
+  const prettyHast = () => {
+    const hast = processor.parse(markdown());
+    removePosition(hast);
+    const result = JSON.stringify(hast, undefined, 2);
+    return result;
+  }
+
   return <div class="demo">
     <textarea class="input-markdown" value={initialMarkdown} onInput={t => setMarkdown(t.target.value)} />
     <textarea class="input-bibtex" value={initialBibtex} onInput={t => setBibtex(t.target.value)} />
     <div class="result-html" innerHTML={markdown2html(markdown())} />
-    <div class="result-ast"><pre><code>{JSON.stringify(processor.parse(markdown()), undefined, 2)}</code></pre></div>
+    <div class="result-ast"><pre><code>{prettyHast()}</code></pre></div>
   </div>
 }

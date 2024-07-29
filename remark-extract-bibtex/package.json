@@ -1,8 +1,8 @@
 {
-  "name": "@benrbray/remark-cite",
+  "name": "@benrbray/remark-extract-bibtex",
   "version": "2.0.1-alpha.4",
   "license": "MIT",
-  "description": "A `remark` plugin for pandoc-style citations.",
+  "description": "A `remark` plugin for detecting bibliographic reference definitions in Markdown files.",
   "repository": {
     "type": "git",
     "url": "https://github.com/benrbray/remark-cite.git",
@@ -13,6 +13,7 @@
     "pandoc",
     "citations",
     "bibliography",
+    "bibtex",
     "remark",
     "remark-plugin"
   ],
@@ -22,9 +23,9 @@
   },
   "type": "module",
   "exports": {
-    ".": "./dist/remark-cite.js"
+    ".": "./dist/remark-extract-bibtex.js"
   },
-  "types": "dist/remark-cite.d.ts",
+  "types": "dist/remark-extract-bibtex.d.ts",
   "files": [
     "dist",
     "lib"
@@ -39,26 +40,22 @@
     "test": "vitest",
     "publish-pnpm": "pnpm publish"
   },
-  "dependencies": {
-    "@benrbray/mdast-util-cite": "workspace:*",
-    "@benrbray/micromark-extension-cite": "workspace:*"
-  },
   "peerDependencies": {
-    "unified": "^11.0.4"
+    "unified": "^11.0.4",
+    "@benrbray/rehype-cite": "workspace:*"
   },
   "devDependencies": {
     "@types/mdast": "^4.0.4",
     "@types/unist": "^3.0.2",
     "del-cli": "^5.1.0",
-    "mdast-util-from-markdown": "^2.0.1",
-    "mdast-util-to-markdown": "^2.1.0",
-    "micromark-util-types": "^2.0.0",
-    "remark-parse": "^11.0.0",
-    "remark-stringify": "^11.0.0",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
     "vite-plugin-dts": "^3.9.1",
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "unist-util-visit": "^5.0.0",
+    "vfile": "^6.0.1"
   }
 }

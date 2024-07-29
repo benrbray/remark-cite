@@ -23,7 +23,8 @@
   },
   "type": "module",
   "exports": {
-    ".": "./dist/rehype-cite.js"
+    ".": "./dist/rehype-cite.js",
+    "./dist/*.css": "./dist/*.css"
   },
   "types": "dist/rehype-cite.d.ts",
   "files": [
@@ -46,7 +47,8 @@
   },
   "peerDependencies": {
     "@benrbray/remark-cite": "workspace:*",
-    "rehype": "^13.0.1"
+    "rehype": "^13.0.1",
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "@benrbray/mdast-util-cite": "workspace:*",
@@ -64,7 +66,7 @@
     "remark-rehype": "^11.1.0",
     "solid-js": "^1.8.15",
     "typescript": "^5.2.2",
-    "unified": "^11.0.4",
+    "unist-util-remove-position": "^5.0.0",
     "vfile": "^6.0.1",
     "vite": "^5.2.0",
     "vite-plugin-dts": "^3.9.1",

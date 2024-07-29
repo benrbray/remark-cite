@@ -94,9 +94,15 @@ importers:
       biblatex-csl-converter:
         specifier: ^2.1.0
         version: 2.1.0
+      hast-util-to-text:
+        specifier: ^4.0.2
+        version: 4.0.2
       rehype:
         specifier: ^13.0.1
         version: 13.0.1
+      unified:
+        specifier: ^11.0.5
+        version: 11.0.5
       unist-util-visit:
         specifier: ^5.0.0
         version: 5.0.0
@@ -146,9 +152,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.4.5
-      unified:
-        specifier: ^11.0.4
-        version: 11.0.4
+      unist-util-remove-position:
+        specifier: ^5.0.0
+        version: 5.0.0
       vfile:
         specifier: ^6.0.1
         version: 6.0.1
@@ -173,6 +179,9 @@ importers:
       '@benrbray/micromark-extension-cite':
         specifier: workspace:*
         version: link:../micromark-extension-cite
+      unified:
+        specifier: ^11.0.4
+        version: 11.0.5
     devDependencies:
       '@types/mdast':
         specifier: ^4.0.4
@@ -201,9 +210,46 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.4.5
+      vite:
+        specifier: ^5.2.0
+        version: 5.3.1(@types/node@20.14.2)
+      vite-plugin-dts:
+        specifier: ^3.9.1
+        version: 3.9.1(@types/node@20.14.2)(rollup@4.18.0)(typescript@5.4.5)(vite@5.3.1(@types/node@20.14.2))
+      vite-tsconfig-paths:
+        specifier: ^4.3.2
+        version: 4.3.2(typescript@5.4.5)(vite@5.3.1(@types/node@20.14.2))
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.0(@types/node@20.14.2)
+
+  remark-extract-bibtex:
+    dependencies:
+      '@benrbray/rehype-cite':
+        specifier: workspace:*
+        version: link:../rehype-cite
       unified:
         specifier: ^11.0.4
-        version: 11.0.4
+        version: 11.0.5
+      unist-util-visit:
+        specifier: ^5.0.0
+        version: 5.0.0
+      vfile:
+        specifier: ^6.0.1
+        version: 6.0.1
+    devDependencies:
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
+      '@types/unist':
+        specifier: ^3.0.2
+        version: 3.0.2
+      del-cli:
+        specifier: ^5.1.0
+        version: 5.1.0
+      typescript:
+        specifier: ^5.2.2
+        version: 5.4.5
       vite:
         specifier: ^5.2.0
         version: 5.3.1(@types/node@20.14.2)
@@ -3345,6 +3391,9 @@ packages:
 
   unified@11.0.4:
     resolution: {integrity: sha512-apMPnyLjAX+ty4OrNap7yumyVAMlKx5IWU2wlzzUdYJO9A8f1p9m/gywF/GM2ZDFcjQPrx59Mc90KwmxsoklxQ==}
+
+  unified@11.0.5:
+    resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
 
   unique-filename@3.0.0:
     resolution: {integrity: sha512-afXhuC55wkAmZ0P18QsVE6kp8JaxrEokN2HGIoIVv2ijHQd419H0+6EigAFcIzXeMIkcIkNBpB3L/DXB3cTS/g==}
@@ -6854,7 +6903,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
       hast-util-from-html: 2.0.1
-      unified: 11.0.4
+      unified: 11.0.5
 
   rehype-sanitize@6.0.0:
     dependencies:
@@ -6865,7 +6914,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.1
-      unified: 11.0.4
+      unified: 11.0.5
 
   rehype@13.0.1:
     dependencies:
@@ -6879,7 +6928,7 @@ snapshots:
       '@types/mdast': 4.0.4
       mdast-util-math: 3.0.0
       micromark-extension-math: 3.0.0
-      unified: 11.0.4
+      unified: 11.0.5
     transitivePeerDependencies:
       - supports-color
 
@@ -6888,7 +6937,7 @@ snapshots:
       '@types/mdast': 4.0.4
       mdast-util-from-markdown: 2.0.1
       micromark-util-types: 2.0.0
-      unified: 11.0.4
+      unified: 11.0.5
     transitivePeerDependencies:
       - supports-color
 
@@ -6897,21 +6946,21 @@ snapshots:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
       mdast-util-to-hast: 13.2.0
-      unified: 11.0.4
+      unified: 11.0.5
       vfile: 6.0.1
 
   remark-stringify@11.0.0:
     dependencies:
       '@types/mdast': 4.0.4
       mdast-util-to-markdown: 2.1.0
-      unified: 11.0.4
+      unified: 11.0.5
 
   remark@15.0.1:
     dependencies:
       '@types/mdast': 4.0.4
       remark-parse: 11.0.0
       remark-stringify: 11.0.0
-      unified: 11.0.4
+      unified: 11.0.5
     transitivePeerDependencies:
       - supports-color
 
@@ -7297,6 +7346,16 @@ snapshots:
   undici-types@5.26.5: {}
 
   unified@11.0.4:
+    dependencies:
+      '@types/unist': 3.0.2
+      bail: 2.0.2
+      devlop: 1.1.0
+      extend: 3.0.2
+      is-plain-obj: 4.1.0
+      trough: 2.2.0
+      vfile: 6.0.1
+
+  unified@11.0.5:
     dependencies:
       '@types/unist': 3.0.2
       bail: 2.0.2

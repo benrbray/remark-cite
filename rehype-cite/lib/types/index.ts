@@ -80,7 +80,7 @@ export type FieldValueMap = {
   "organization" : TextValue[][],
   "institution" : TextValue[][],
   
-  "pages" : [TextValue[], TextValue[]][]
+  "pages" : ([TextValue[], TextValue[]]|[TextValue[]])[]
 } & { [F in NameFields] : NameValue[] };
 
 type FieldValue<K> = K extends keyof FieldValueMap ? FieldValueMap[K] : TextValue[];
