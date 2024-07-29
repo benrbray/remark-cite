@@ -81,7 +81,7 @@ const exitInlineCite: Handle = function(this: CompileContext, token: Token) {
 	const value = this.sliceSerialize(token);
 	citeNode.value = value;
 	citeNode.data.hChildren!.push({type: 'text', value: value });
-	citeNode.data.hProperties!["data-cite"] = JSON.stringify(citeNode.data.citeItems);
+	citeNode.data.hProperties!["dataCite"] = JSON.stringify(citeNode.data.citeItems);
 }
 
 // inlineCiteMarker_alt ------------------------------------

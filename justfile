@@ -1,0 +1,2 @@
+build:
+  lerna run build

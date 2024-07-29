@@ -80,7 +80,7 @@ export function rehypeCite(options: RehypeCiteOptions) {
     return {
       type: "element",
       tagName: "div",
-      properties: {},
+      properties: { className: "rehype-cite-bib" },
       children: [biblioTitle, {
         type: "element",
         tagName: "div",
@@ -112,6 +112,23 @@ export function rehypeCite(options: RehypeCiteOptions) {
       { type: "text", value: "]"},
     ];
   }
+
+  const processBlockCite = (
+    formatted: Partial<Record<string, FormattedCitation>>,
+    citeItems: CiteItem[],
+    parentElement: HastElement,
+  ) => {
+    const entryIds: ElementContent[] = citeItems.map(ci => {
+      const id = formatted[ci.key];
+      if(id) { return id.citeBib; }
+      return { type: "text", value: `${ci.key}` };
+    });
+
+    parentElement.type = "element";
+    parentElement.tagName = "div";
+    parentElement.properties.className = "cite-block";
+    parentElement.children = entryIds;
+  };
 
   /**
    * Renders inline citations and bibliography entries for the given keys.
@@ -177,10 +194,10 @@ export function rehypeCite(options: RehypeCiteOptions) {
 
   return function(tree: Root, _file: VFile): undefined {
     let citations: CiteItem[] = [];
-    let citationsInline: { element: HastElement, citeItems: CiteItem[] }[] = [];
+    let citationsInline: { element: HastElement, isBlock: boolean, citeItems: CiteItem[] }[] = [];
 
     // traverse the hast syntax tree and collect all cite-inline nodes
-    visit(tree, 'element', function(element, _index): VisitorResult {
+    visit(tree, 'element', function(element, _index, _parent): VisitorResult {
       // look for elements marked with "cite-inline" class
       const classes = Array.isArray(element.properties.className)
         ? element.properties.className
@@ -189,14 +206,20 @@ export function rehypeCite(options: RehypeCiteOptions) {
       if(!isCiteInline) { return CONTINUE; }
       
       // validate data-cite attribute
-      const citeData = element.properties["data-cite"];
+      const citeData = element.properties["dataCite"];
       if(!citeData) { return CONTINUE; }
       if(typeof citeData !== "string") { return CONTINUE; }
 
       const citeItems = JSON.parse(citeData) as CiteItem[];
       citations = citations.concat(citeItems);
 
-      citationsInline.push({ element, citeItems });
+      const isBlock = (!!_parent && _parent.type === "element" && _parent.tagName === "p" && _parent.children.length === 1);
+      
+      if(isBlock) {
+        citationsInline.push({ element: _parent as HastElement, citeItems, isBlock });
+      } else {
+        citationsInline.push({ element, citeItems, isBlock });
+      }
 
       return SKIP;
     });
@@ -205,8 +228,9 @@ export function rehypeCite(options: RehypeCiteOptions) {
     let formatted = formatCitations(citations.map(c => c.key));
 
     // insert inline citations into the hast tree
-    citationsInline.forEach(({ element, citeItems }) => {
-      processInlineCite(formatted, citeItems, element);
+    citationsInline.forEach(({ element, isBlock, citeItems }) => {
+      if(isBlock) { processBlockCite(formatted, citeItems, element);  }
+      else        { processInlineCite(formatted, citeItems, element); }
     });
 
     // append the bibliography to the hast tree
