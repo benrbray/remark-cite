@@ -94,6 +94,9 @@ importers:
       biblatex-csl-converter:
         specifier: ^2.1.0
         version: 2.1.0
+      hast-util-to-text:
+        specifier: ^4.0.2
+        version: 4.0.2
       rehype:
         specifier: ^13.0.1
         version: 13.0.1
@@ -204,6 +207,46 @@ importers:
       remark-stringify:
         specifier: ^11.0.0
         version: 11.0.0
+      typescript:
+        specifier: ^5.2.2
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.0
+        version: 5.3.1(@types/node@20.14.2)
+      vite-plugin-dts:
+        specifier: ^3.9.1
+        version: 3.9.1(@types/node@20.14.2)(rollup@4.18.0)(typescript@5.4.5)(vite@5.3.1(@types/node@20.14.2))
+      vite-tsconfig-paths:
+        specifier: ^4.3.2
+        version: 4.3.2(typescript@5.4.5)(vite@5.3.1(@types/node@20.14.2))
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.0(@types/node@20.14.2)
+
+  remark-extract-bibtex:
+    dependencies:
+      '@benrbray/rehype-cite':
+        specifier: workspace:*
+        version: link:../rehype-cite
+      unified:
+        specifier: ^11.0.4
+        version: 11.0.5
+      unist-util-visit:
+        specifier: ^5.0.0
+        version: 5.0.0
+      vfile:
+        specifier: ^6.0.1
+        version: 6.0.1
+    devDependencies:
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
+      '@types/unist':
+        specifier: ^3.0.2
+        version: 3.0.2
+      del-cli:
+        specifier: ^5.1.0
+        version: 5.1.0
       typescript:
         specifier: ^5.2.2
         version: 5.4.5
