@@ -14,7 +14,6 @@ import rehypeCite from "@benrbray/rehype-cite";
 
 import dedent from "dedent-js";
 
-
 import bibFile from "./refs.bib?raw"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,10 +50,15 @@ export const Demo = () => {
     return result;
   }
 
-  return <div class="demo">
-    <textarea class="input-markdown" value={initialMarkdown} onInput={t => setMarkdown(t.target.value)} />
-    <textarea class="input-bibtex" value={initialBibtex} onInput={t => setBibtex(t.target.value)} />
-    <div class="result-html" innerHTML={markdown2html(markdown())} />
-    <div class="result-ast"><pre><code>{prettyHast()}</code></pre></div>
-  </div>
+  return <div class="content">
+    <h1>remark-cite</h1>
+    <div style="position: relative">
+      <textarea class="input-markdown" value={initialMarkdown} onInput={t => setMarkdown(t.target.value)} />
+      <textarea class="input-bibtex" value={initialBibtex} onInput={t => setBibtex(t.target.value)} />
+      <div class="result-html" innerHTML={markdown2html(markdown())} />
+      <div class="result-ast"><pre><code>{prettyHast()}</code></pre></div>
+      <div class="demo">
+      </div>
+    </div>
+  </div>;
 }

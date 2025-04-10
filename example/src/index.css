@@ -11,6 +11,17 @@ body {
   font-weight: normal;
 }
 
+.content {
+  margin: 0 auto;
+  max-width: 640px;
+}
+
+.input-markdown, .input-bibtex {
+  display: block;
+  width: 100%;
+  min-height: 10em;
+}
+/* 
 .demo {
   display: grid;
   grid-template-columns: 50% 50%;
@@ -53,4 +64,4 @@ body {
 
   overflow-y: scroll;
   overflow-x: hidden;
-}
+} */
