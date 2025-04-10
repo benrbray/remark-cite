@@ -94,9 +94,6 @@ importers:
       biblatex-csl-converter:
         specifier: ^2.1.0
         version: 2.1.0
-      hast-util-to-text:
-        specifier: ^4.0.2
-        version: 4.0.2
       rehype:
         specifier: ^13.0.1
         version: 13.0.1

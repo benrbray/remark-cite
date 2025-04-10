@@ -42,10 +42,6 @@ export type RehypeCiteOptions = {
 
 type RehypeCiteConfig = {
   bibFiles: string[],
-  detectBibTex: {
-    enabled: boolean,
-    removeBibTex: boolean
-  }
 }
 
 /**
@@ -57,11 +53,8 @@ type RehypeCiteConfig = {
  * to change without breaking the implementation, and vice-versa.
  */
 const optionsToConfig = (options: RehypeCiteOptions): RehypeCiteConfig => {
-  const detectBibTex = options.detectBibTex || { enabled: true, removeBibTex: true };
-
   return {
     bibFiles: options.bibFiles,
-    detectBibTex
   };
 }
 

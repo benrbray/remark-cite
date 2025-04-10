@@ -1,2 +1,2 @@
 build:
-  lerna run build
+  pnpm lerna run build
