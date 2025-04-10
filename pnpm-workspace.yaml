@@ -4,3 +4,4 @@ packages:
   - "remark-cite"
   - "remark-extract-bibtex"
   - "rehype-cite"
+  - "example"

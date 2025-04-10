@@ -3,7 +3,7 @@ import type { Processor } from "unified";
 import { SKIP, visit, VisitorResult } from 'unist-util-visit';
 import { VFile } from "vfile";
 
-// ensure that the declarations for `Vfile.data` defined by `remark-cite` are accessible
+// ensure that the declarations for `Vfile.data` defined by `rehype-cite` are accessible
 import type { } from "@benrbray/rehype-cite";
 
 ////////////////////////////////////////////////////////////////////////////////

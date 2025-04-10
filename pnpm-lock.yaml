@@ -12,6 +12,88 @@ importers:
         specifier: ^8.1.5
         version: 8.1.6(encoding@0.1.13)
 
+  example:
+    dependencies:
+      '@benrbray/mdast-util-cite':
+        specifier: workspace:*
+        version: link:../mdast-util-cite
+      '@benrbray/rehype-cite':
+        specifier: workspace:*
+        version: link:../rehype-cite
+      '@benrbray/remark-cite':
+        specifier: workspace:*
+        version: link:../remark-cite
+      '@benrbray/remark-extract-bibtex':
+        specifier: workspace:*
+        version: link:../remark-extract-bibtex
+      biblatex-csl-converter:
+        specifier: ^2.1.0
+        version: 2.1.0
+      dedent-js:
+        specifier: ^1.0.1
+        version: 1.0.1
+      katex:
+        specifier: ^0.16.10
+        version: 0.16.10
+      rehype:
+        specifier: ^13.0.1
+        version: 13.0.1
+      rehype-katex:
+        specifier: ^7.0.0
+        version: 7.0.0
+      rehype-stringify:
+        specifier: ^10.0.0
+        version: 10.0.0
+      remark:
+        specifier: ^15.0.1
+        version: 15.0.1
+      remark-math:
+        specifier: ^6.0.0
+        version: 6.0.0
+      remark-parse:
+        specifier: ^11.0.0
+        version: 11.0.0
+      remark-rehype:
+        specifier: ^11.1.0
+        version: 11.1.0
+      solid-js:
+        specifier: ^1.8.15
+        version: 1.8.17
+      unified:
+        specifier: ^11.0.5
+        version: 11.0.5
+      unist-util-remove-position:
+        specifier: ^5.0.0
+        version: 5.0.0
+      unist-util-visit:
+        specifier: ^5.0.0
+        version: 5.0.0
+      vfile:
+        specifier: ^6.0.1
+        version: 6.0.1
+    devDependencies:
+      '@types/hast':
+        specifier: ^3.0.4
+        version: 3.0.4
+      '@types/node':
+        specifier: ^20.14.2
+        version: 20.14.2
+      del-cli:
+        specifier: ^5.1.0
+        version: 5.1.0
+      typescript:
+        specifier: ^5.2.2
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.0
+        version: 5.3.1(@types/node@20.14.2)
+      vite-plugin-solid:
+        specifier: ^2.10.2
+        version: 2.10.2(solid-js@1.8.17)(vite@5.3.1(@types/node@20.14.2))
+      vite-tsconfig-paths:
+        specifier: ^4.3.2
+        version: 4.3.2(typescript@5.4.5)(vite@5.3.1(@types/node@20.14.2))
+
   mdast-util-cite:
     dependencies:
       '@benrbray/micromark-extension-cite':
@@ -3385,9 +3467,6 @@ packages:
 
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
-
-  unified@11.0.4:
-    resolution: {integrity: sha512-apMPnyLjAX+ty4OrNap7yumyVAMlKx5IWU2wlzzUdYJO9A8f1p9m/gywF/GM2ZDFcjQPrx59Mc90KwmxsoklxQ==}
 
   unified@11.0.5:
     resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
@@ -6918,7 +6997,7 @@ snapshots:
       '@types/hast': 3.0.4
       rehype-parse: 9.0.0
       rehype-stringify: 10.0.0
-      unified: 11.0.4
+      unified: 11.0.5
 
   remark-math@6.0.0:
     dependencies:
@@ -7341,16 +7420,6 @@ snapshots:
     optional: true
 
   undici-types@5.26.5: {}
-
-  unified@11.0.4:
-    dependencies:
-      '@types/unist': 3.0.2
-      bail: 2.0.2
-      devlop: 1.1.0
-      extend: 3.0.2
-      is-plain-obj: 4.1.0
-      trough: 2.2.0
-      vfile: 6.0.1
 
   unified@11.0.5:
     dependencies:

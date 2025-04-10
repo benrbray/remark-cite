@@ -1,19 +1,19 @@
 import { createSignal } from "solid-js";
 
+import { unified } from "unified";
 import { removePosition } from "unist-util-remove-position";
 
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
-import remarkCite from "@benrbray/remark-cite";
 import remarkMath from "remark-math";
-
 import rehypeKatex from "rehype-katex";
 import rehypeStringify from "rehype-stringify";
-import { unified } from "unified";
+
+import remarkCite from "@benrbray/remark-cite";
+import rehypeCite from "@benrbray/rehype-cite";
 
 import dedent from "dedent-js";
 
-import rehypeCite from "../lib/main";
 
 import bibFile from "./refs.bib?raw"
 

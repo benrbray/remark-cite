@@ -1,10 +1,12 @@
 # `remark-cite`
 
-Following [convention](https://github.com/micromark/micromark/discussions/56), this repository contains **three separate `npm` packages** related to support for [`pandoc`-style](https://pandoc.org/MANUAL.html#extension-citations) citation syntax for the `remark` Markdown parser.
+Following [convention](https://github.com/micromark/micromark/discussions/56), this repository contains **multiple distinct `npm` packages** related to support for [`pandoc`-style](https://pandoc.org/MANUAL.html#extension-citations) citation syntax for the `remark` Markdown parser.
 
 * [`micromark-extension-cite`](https://www.npmjs.com/package/@benrbray/micromark-extension-cite) defines a new [syntax extension](https://github.com/micromark/micromark#syntaxextension) for `micromark`, which is responsible for converting markdown syntax to a token stream
 * [`mdast-util-cite`](https://www.npmjs.com/package/@benrbray/mdast-util-cite) describes how to convert tokens output by `micromark-extension-cite` into either an HTML string or `mdast` syntax tree.
 * [`remark-cite`](https://www.npmjs.com/package/@benrbray/remark-cite) encapsulates the above functionality into a `remark` plugin.
+* [`rehype-cite`](https://www.npmjs.com/package/@benrbray/rehype-cite) is capable of rendering citations as HTML.
+* [`remark-extract-bibtex`](https://www.npmjs.com/package/@benrbray/remark-extract-bibtex)
 
 For more information, see the individual folders for each package.
 

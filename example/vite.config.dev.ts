@@ -8,14 +8,4 @@ export default defineConfig({
     solid(),
     tsConfigPaths()
   ],
-  build: {
-    lib: {
-      formats: ["es"],
-      entry: resolve(__dirname, 'lib/main.ts')
-    },
-    rollupOptions: {
-      // make sure to externalize deps that shouldn't be bundled
-      external: [],
-    },
-  },
 })
