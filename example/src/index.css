@@ -7,7 +7,7 @@
 }
 
 body {
-  font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, serif;
+  font-family: system-ui, sans-serif; 
   font-weight: normal;
 }
 
@@ -19,8 +19,32 @@ body {
 .input-markdown, .input-bibtex {
   display: block;
   width: 100%;
-  min-height: 10em;
+  min-height: 16em;
 }
+
+.result {
+  margin: 32px 0;
+  padding: 16px;
+  font-size: 1.1em;
+  
+  border: 1px solid rgb(255, 153, 95);
+  box-shadow: 4px 4px 0px rgb(255, 196, 161);
+  background-color: rgb(255, 238, 231);
+
+  font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, serif;
+}
+
+.result {
+  color: rgb(132, 49, 0);
+  line-height: 1.4em;
+}
+
+.result h1, .result h2, .result h3 {
+  color: rgb(168, 62, 0)
+}
+
+
+.katex { line-height: 1.0 !important; }
 /* 
 .demo {
   display: grid;
