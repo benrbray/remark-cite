@@ -112,12 +112,20 @@ const processInlineCite = (
   });
 
   element.children = [
-    { type: "text", value: "["},
-    ...entryIds.flatMap((e,i): ElementContent[] => {
-      if(i === 0) { return [e]; }
-      return [{ type: "text", value: ", " }, e];
-    }),
-    { type: "text", value: "]"},
+    { type: "element",
+      tagName: "CitationInline",
+      properties: {
+        foobar: "baz"
+      },
+      children: [
+        { type: "text", value: "["},
+        ...entryIds.flatMap((e,i): ElementContent[] => {
+          if(i === 0) { return [e]; }
+          return [{ type: "text", value: ", " }, e];
+        }),
+        { type: "text", value: "]"},
+      ]
+    }
   ];
 }
 

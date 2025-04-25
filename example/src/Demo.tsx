@@ -1,4 +1,4 @@
-import { createSignal, JSX } from "solid-js";
+import { createSignal, JSX, ParentProps } from "solid-js";
 import { Fragment, jsx, jsxs, jsxDEV } from "solid-js/h/jsx-runtime";
 
 import { Processor, unified } from "unified";
@@ -33,6 +33,18 @@ const baseProcessor: Processor = unified()
 const htmlProcessor: Processor = baseProcessor()
   .use(rehypeStringify);
 
+const Heading = (props: ParentProps) => {
+  return <div class="heading">
+    Heading:  {props.children}
+  </div>
+}
+const CitationInline = (props: ParentProps) => {
+  console.log(props);
+  return <div class="citation-inline" style="background-color: #ccf; display: inline-block">
+    (Citation:  {props.children})
+  </div>
+}
+
 const jsxProcessor: Processor = baseProcessor()
 . use(rehypeReact, {
    Fragment,
@@ -41,6 +53,11 @@ const jsxProcessor: Processor = baseProcessor()
    elementAttributeNameCase: "html",
    stylePropertyNameCase: "css",
    components: {
+    h1: Heading,
+    h2: Heading,
+    h3: Heading,
+    h4: Heading,
+    CitationInline
       // div: () => {
       //   return <div>Context: {value}</div>;
       // },
