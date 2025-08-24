@@ -40,8 +40,11 @@ const Heading = (props: ParentProps) => {
 }
 const CitationInline = (props: ParentProps) => {
   console.log(props);
-  return <div class="citation-inline" style="background-color: #ccf; display: inline-block">
-    (Citation:  {props.children})
+
+  const [selected, setSelected] = createSignal(false)
+
+  return <div onclick={() => setSelected(prev => !prev)} class="citation-inline" style="background-color: #ccf; display: inline-block">
+    { selected() ? <>Citation:  {props.children}</> : "Hidden"}
   </div>
 }
 
