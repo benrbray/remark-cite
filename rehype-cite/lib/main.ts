@@ -111,11 +111,18 @@ const processInlineCite = (
     return { type: "text", value: `${ci.key}` };
   });
 
+  const citeItemsFormatted = citeItems.map(ci => {
+    return {
+      ...ci,
+      formatted: formatted[ci.key]
+    }
+  })
+
   element.children = [
     { type: "element",
       tagName: "CitationInline",
       properties: {
-        foobar: "baz"
+        citeItemsJson: JSON.stringify(citeItemsFormatted)
       },
       children: [
         { type: "text", value: "["},

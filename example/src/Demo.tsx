@@ -18,6 +18,7 @@ import dedent from "dedent-js";
 
 
 import bibFile from "./refs.bib?raw"
+import { CiteItem } from "@benrbray/mdast-util-cite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -38,14 +39,41 @@ const Heading = (props: ParentProps) => {
     Heading:  {props.children}
   </div>
 }
-const CitationInline = (props: ParentProps) => {
-  console.log(props);
-  return <div class="citation-inline" style="background-color: #ccf; display: inline-block">
-    (Citation:  {props.children})
-  </div>
+
+// const useMarkdown = (md: string) => {
+//   const [markdown, setMarkdown] = createSignal(md);
+  
+//   return [content, setMarkdown]
+// }
+
+namespace CitationInline {
+  export type Props = ParentProps<{
+    citeLookup?: (key: string) => JSX.Element,
+    citeItemsJson: string
+  }>
 }
 
-const jsxProcessor: Processor = baseProcessor()
+const CitationInline = (setSelected: (key: string) => void) => 
+  (props: CitationInline.Props) => {
+    const citeItems = JSON.parse(props.citeItemsJson) as CiteItem[];
+    console.log(citeItems)
+
+    const [selected, setSelected] = createSignal(false);
+
+    return <div 
+      class="citation-inline"
+      style="background-color: #ccf; display: inline-block"
+      onclick={() => { setSelected(prev => !prev) }}
+    >
+      ({selected() ? <>SHOW {props.children}</> : "HIDDEN" })
+    </div>
+  }
+
+// this processor is configured for solidjs
+// to use react or another frontend jsx framework,
+// you may need a slightly different configuration
+// (see https://github.com/syntax-tree/hast-util-to-jsx-runtime)
+const solidJsProcessor: Processor = baseProcessor()
 . use(rehypeReact, {
    Fragment,
    jsx,
@@ -57,7 +85,9 @@ const jsxProcessor: Processor = baseProcessor()
     h2: Heading,
     h3: Heading,
     h4: Heading,
-    CitationInline
+    CitationInline: CitationInline((key: string) => {
+      
+    })
       // div: () => {
       //   return <div>Context: {value}</div>;
       // },
@@ -68,10 +98,6 @@ const markdown2html = (markdown: string): string => {
   const mdast = htmlProcessor.parse(markdown);
   const hast  = htmlProcessor.runSync(mdast);
   return htmlProcessor.stringify(hast).toString()
-}
-
-const markdown2jsx = (markdown: string) => {
-  return jsxProcessor.processSync(markdown);
 }
 
 export const Demo = () => {
@@ -93,8 +119,8 @@ export const Demo = () => {
   }
 
   // const [jsxContent, setJsxContent] = createSignal<JSX.Element>()
-  const jsxContent = (): JSX.Element => {
-    const file = jsxProcessor.processSync(markdown())
+  const solidJsContent = (): JSX.Element => {
+    const file = solidJsProcessor.processSync(markdown())
     return file.result as JSX.Element;
   }
 
@@ -109,7 +135,7 @@ export const Demo = () => {
       <div class="result result-html" innerHTML={markdown2html(markdown())} />
       <h2>Result (JSX)</h2>
       <div class="result result-jsx">
-        {jsxContent()}
+        {solidJsContent()}
       </div>
       <div class="result result-ast"><pre><code>{prettyHast()}</code></pre></div>
       <div class="demo">
