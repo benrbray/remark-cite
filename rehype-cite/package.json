@@ -34,9 +34,9 @@
   "scripts": {
     "dev": "vite --config vite.config.dev.ts",
     "dev:preview": "vite --config vite.config.dev.ts preview",
-    "build:check": "tsc",
+    "check:types": "tsc --noEmit",
     "build:lib": "vite --config vite.config.lib.ts build",
-    "build": "pnpm run build:check && pnpm run build:lib",
+    "build": "pnpm run check:types && pnpm run build:lib",
     "clean": "pnpm del dist",
     "prepare": "pnpm run clean; pnpm run build",
     "publish-pnpm": "pnpm publish"

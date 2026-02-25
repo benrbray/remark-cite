@@ -1,11 +1,11 @@
-import { BibLatexParser } from "biblatex-csl-converter"
+// import { BibLatexParser } from "biblatex-csl-converter"
 
 import type { ElementContent, Element as HastElement} from "hast";
 export type { HastElement };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export type EntryObject_Old = ReturnType<BibLatexParser["parse"]>["entries"][number];
+// export type EntryObject_Old = ReturnType<BibLatexParser["parse"]>["entries"][number];
 
 export type Formatter<K extends EntryType = EntryType> = (entry: Entry<K>) => (ElementContent|((ElementContent|null)[])|null)[];
 

@@ -1,5 +1,5 @@
 build:
-  pnpm lerna run build
+  pnpm turbo build check:types
 
 example:
-  cd example && pnpm run dev
+  pnpm turbo example#dev

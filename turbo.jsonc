@@ -1,0 +1,27 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+
+  // turborepo causes my computer to crash if I don't limit concurrency...
+  "concurrency": "4",
+
+  // build tasks
+  "tasks": {
+    "build": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["^build", "check:types"]
+    },
+    "check:types": {
+      "dependsOn": ["^check:types"]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    // workspace-level tasks
+    "example#dev" : {
+      "dependsOn" : ["^build"],
+      "persistent": true,
+      "cache": false
+    }
+  }
+}

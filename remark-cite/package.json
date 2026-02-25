@@ -31,7 +31,8 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
+    "check:types": "tsc --noEmit",
     "clean": "pnpm del dist",
     "prepare": "pnpm run clean; pnpm run build",
     "pretest": "pnpm run clean; pnpm run build",

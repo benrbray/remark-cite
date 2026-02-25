@@ -28,6 +28,7 @@ export const visitCitations = (element: HastElement, parent: HastElement | Root 
 
   const citeItems = JSON.parse(citeData) as CiteItem[];
   
+  // treat this as a "block citation" if it is the only element in its paragraph
   const isBlock = (!!parent
     && parent.type === "element"
     && parent.tagName === "p"

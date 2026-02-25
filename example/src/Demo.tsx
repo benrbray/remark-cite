@@ -1,24 +1,31 @@
+// solid
 import { createSignal, JSX, ParentProps } from "solid-js";
-import { Fragment, jsx, jsxs, jsxDEV } from "solid-js/h/jsx-runtime";
+import { Fragment, jsx, jsxs } from "solid-js/h/jsx-runtime";
 
+// unified
 import { Processor, unified } from "unified";
 import { removePosition } from "unist-util-remove-position";
 
+// remark
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import rehypeReact, { Options } from "rehype-react";
+import rehypeReact from "rehype-react";
 import rehypeStringify from "rehype-stringify";
 
+// miscellaneous
+import dedent from "dedent-js";
+
+// remark-cite
 import remarkCite from "@benrbray/remark-cite";
 import rehypeCite from "@benrbray/rehype-cite";
 
-import dedent from "dedent-js";
-
-
+// package impots
 import bibFile from "./refs.bib?raw"
-import { CiteItem } from "@benrbray/mdast-util-cite";
+import { Heading } from "./components/Heading";
+import { CitationInline } from "./components/CitationInline";
+import { Bibliography } from "./components/Bibliography";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,65 +41,7 @@ const baseProcessor: Processor = unified()
 const htmlProcessor: Processor = baseProcessor()
   .use(rehypeStringify);
 
-const Heading = (props: ParentProps) => {
-  return <div class="heading">
-    Heading:  {props.children}
-  </div>
-}
-
-// const useMarkdown = (md: string) => {
-//   const [markdown, setMarkdown] = createSignal(md);
-  
-//   return [content, setMarkdown]
-// }
-
-namespace CitationInline {
-  export type Props = ParentProps<{
-    citeLookup?: (key: string) => JSX.Element,
-    citeItemsJson: string
-  }>
-}
-
-const CitationInline = (setSelected: (key: string) => void) => 
-  (props: CitationInline.Props) => {
-    const citeItems = JSON.parse(props.citeItemsJson) as CiteItem[];
-    console.log(citeItems)
-
-    const [selected, setSelected] = createSignal(false);
-
-    return <div 
-      class="citation-inline"
-      style="background-color: #ccf; display: inline-block"
-      onclick={() => { setSelected(prev => !prev) }}
-    >
-      ({selected() ? <>SHOW {props.children}</> : "HIDDEN" })
-    </div>
-  }
-
-// this processor is configured for solidjs
-// to use react or another frontend jsx framework,
-// you may need a slightly different configuration
-// (see https://github.com/syntax-tree/hast-util-to-jsx-runtime)
-const solidJsProcessor: Processor = baseProcessor()
-. use(rehypeReact, {
-   Fragment,
-   jsx,
-   jsxs,
-   elementAttributeNameCase: "html",
-   stylePropertyNameCase: "css",
-   components: {
-    h1: Heading,
-    h2: Heading,
-    h3: Heading,
-    h4: Heading,
-    CitationInline: CitationInline((key: string) => {
-      
-    })
-      // div: () => {
-      //   return <div>Context: {value}</div>;
-      // },
-    },
-  });
+////////////////////////////////////////////////////////////////////////////////
 
 const markdown2html = (markdown: string): string => {
   const mdast = htmlProcessor.parse(markdown);
@@ -101,16 +50,39 @@ const markdown2html = (markdown: string): string => {
 }
 
 export const Demo = () => {
-  const initialMarkdown = dedent`
-    ### Abstract
+  // signals
+  const [markdown, setMarkdown] = createSignal(
+    dedent`
+      ### Abstract
+      Inspired by the treatment in [@riehl2017:category], we use the framework presented by [@milewski:ct4p-yoneda, Section 1.2; @meijer1991functional, p.4] to derive a new convergence proof.
+    `
+  );
+  const [bibtex, setBibtex] = createSignal(bibFile);
+  const [selectedKeys, setSelectedKeys] = createSignal(new Set());
 
-    Inspired by the treatment in [@riehl2017:category], we use the framework presented by [@milewski:ct4p-yoneda, Section 1.2; @meijer1991functional, p.4] to derive a new convergence proof.
-    `;
-  const initialBibtex = bibFile;
+  // this processor is configured for solidjs
+  // to use react or another frontend jsx framework,
+  // you may need a slightly different configuration
+  // (see https://github.com/syntax-tree/hast-util-to-jsx-runtime)
+  const solidJsProcessor: Processor = baseProcessor()
+  . use(rehypeReact, {
+    Fragment,
+    jsx,
+    jsxs,
+    elementAttributeNameCase: "html",
+    stylePropertyNameCase: "css",
+    components: {
+      h1: Heading,
+      h2: Heading,
+      h3: Heading,
+      h4: Heading,
+      CitationInline: CitationInline((key: string) => {}),
+      Bibliography: Bibliography(() => {}),
+      },
+    });
 
-  const [markdown, setMarkdown] = createSignal(initialMarkdown);
-  const [_bibtex, setBibtex] = createSignal(initialBibtex);
 
+  // preview
   const prettyHast = () => {
     const hast = htmlProcessor.parse(markdown());
     removePosition(hast);
@@ -118,7 +90,6 @@ export const Demo = () => {
     return result;
   }
 
-  // const [jsxContent, setJsxContent] = createSignal<JSX.Element>()
   const solidJsContent = (): JSX.Element => {
     const file = solidJsProcessor.processSync(markdown())
     return file.result as JSX.Element;
@@ -128,16 +99,20 @@ export const Demo = () => {
     <h1>remark-cite</h1>
     <div style="position: relative">
       <h2>BibTeX Input</h2>
-      <textarea class="input-bibtex" value={initialBibtex} onInput={t => setBibtex(t.target.value)} />
+      <textarea class="input-bibtex" value={bibtex()} onInput={t => setBibtex(t.target.value)} />
       <h2>Markdown Input</h2>
-      <textarea class="input-markdown" value={initialMarkdown} onInput={t => setMarkdown(t.target.value)} />
+      <textarea class="input-markdown" value={markdown()} onInput={t => setMarkdown(t.target.value)} />
       <h2>Result (HTML)</h2>
       <div class="result result-html" innerHTML={markdown2html(markdown())} />
       <h2>Result (JSX)</h2>
       <div class="result result-jsx">
         {solidJsContent()}
       </div>
-      <div class="result result-ast"><pre><code>{prettyHast()}</code></pre></div>
+      <div class="result result-ast">
+        <pre><code>
+          {prettyHast()}
+        </code></pre>
+      </div>
       <div class="demo">
       </div>
     </div>
