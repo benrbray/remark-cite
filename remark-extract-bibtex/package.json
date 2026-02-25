@@ -1,24 +1,21 @@
 {
-  "name": "@benrbray/micromark-extension-cite",
-  "version": "2.0.1-alpha.1",
+  "name": "@benrbray/remark-extract-bibtex",
+  "version": "2.0.1-alpha.4",
   "license": "MIT",
-  "private": false,
-  "description": "Micromark syntax extension for pandoc-style citations.",
+  "description": "A `remark` plugin for detecting bibliographic reference definitions in Markdown files.",
   "repository": {
     "type": "git",
     "url": "https://github.com/benrbray/remark-cite.git",
-    "directory": "micromark-extension-cite"
+    "directory": "remark-cite"
   },
   "keywords": [
     "markdown",
     "pandoc",
     "citations",
     "bibliography",
+    "bibtex",
     "remark",
-    "remark-plugin",
-    "micromark",
-    "micromark-plugin",
-    "micromark-extension"
+    "remark-plugin"
   ],
   "author": {
     "name": "Benjamin R. Bray",
@@ -26,9 +23,9 @@
   },
   "type": "module",
   "exports": {
-    ".": "./dist/micromark-extension-cite.js"
+    ".": "./dist/remark-extract-bibtex.js"
   },
-  "types": "dist/micromark-extension-cite.d.ts",
+  "types": "dist/remark-extract-bibtex.d.ts",
   "files": [
     "dist",
     "lib"
@@ -45,15 +42,21 @@
     "publish-pnpm": "pnpm publish"
   },
   "peerDependencies": {
-    "micromark": "^4.0.0"
+    "unified": "^11.0.4",
+    "@benrbray/rehype-cite": "workspace:*"
   },
   "devDependencies": {
+    "@types/mdast": "^4.0.4",
+    "@types/unist": "^3.0.2",
     "del-cli": "^5.1.0",
-    "micromark-util-types": "^2.0.0",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
     "vite-plugin-dts": "^3.9.1",
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "unist-util-visit": "^5.0.0",
+    "vfile": "^6.0.1"
   }
 }

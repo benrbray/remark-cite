@@ -1,0 +1,62 @@
+{
+  "name": "example",
+  "version": "2.0.1-alpha.5",
+  "license": "MIT",
+  "private": true,
+  "description": "An example project for `remark-cite` and `rehype-cite`.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benrbray/remark-cite.git",
+    "directory": "example"
+  },
+  "keywords": [
+    "markdown",
+    "pandoc",
+    "citations",
+    "bibliography",
+    "rehype",
+    "rehype-plugin"
+  ],
+  "author": {
+    "name": "Benjamin R. Bray",
+    "url": "https://benrbray.com/"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config vite.config.dev.ts",
+    "dev:preview": "vite --config vite.config.dev.ts preview",
+    "build": "vite --config vite.config.dev.ts build",
+    "clean": "pnpm del dist"
+  },
+  "dependencies": {
+    "@benrbray/mdast-util-cite": "workspace:*",
+    "@benrbray/rehype-cite": "workspace:*",
+    "@benrbray/remark-cite": "workspace:*",
+    "@benrbray/remark-extract-bibtex": "workspace:*",
+    "biblatex-csl-converter": "^2.1.0",
+    "dedent-js": "^1.0.1",
+    "katex": "^0.16.10",
+    "rehype": "^13.0.1",
+    "rehype-katex": "^7.0.0",
+    "rehype-react": "^8.0.0",
+    "rehype-stringify": "^10.0.0",
+    "remark": "^15.0.1",
+    "remark-math": "^6.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.0",
+    "solid-js": "^1.8.15",
+    "unified": "^11.0.5",
+    "unist-util-remove-position": "^5.0.0",
+    "unist-util-visit": "^5.0.0",
+    "vfile": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/hast": "^3.0.4",
+    "@types/node": "^20.14.2",
+    "del-cli": "^5.1.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vite-plugin-solid": "^2.10.2",
+    "vite-tsconfig-paths": "^4.3.2"
+  }
+}

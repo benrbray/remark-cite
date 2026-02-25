@@ -43,7 +43,6 @@ function optional(...p: Template[]): Template|Template[] {
   if(p.length === 1) {
     return { type: "optional", template: p[0] };
   }
-  
   return p.map(t => optional(t));
 }
 
@@ -94,10 +93,16 @@ export const formatTextValuess = (values: TextValue[][]): EvalResult => ({
   values: intersperse(values.map(formatTextValues), { type: "string", value: ", " })
 });
 
-export const formatPages = (values: [TextValue[], TextValue[]][]): EvalResult => ({
+export const formatPages = (values: ([TextValue[], TextValue[]]|[TextValue[]])[]): EvalResult => ({
   type: "sequence",
   values: intersperse<EvalResult>(
-    values.map(([a,b]) => {
+    values.map((range) => {
+      if(range.length === 1) {
+        return formatTextValues(range[0]);
+      }
+
+      const [a,b] = range;
+
       const ra = formatTextValues(a);
       const rb = formatTextValues(b);
 
@@ -345,11 +350,11 @@ const defaultTemplate = periods(
           field("issuetitle"),
           field("maintitle")
         ),
-        oneof(
+        optional(oneof(
           join(" (Vol. ", field("volume"), ", ", field("pages"), ")"),
           join(" (Vol. ", field("volume"), ")"),
           join(", ", field("pages"))
-        )
+        ))
       ),
       oneof(
         join("(Vol. ", field("volume"), ", ", field("pages"), ")"),

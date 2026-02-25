@@ -1,10 +1,9 @@
 {
   "extends": "../_config/tsconfig.base.json",
   "compilerOptions": {
-    "paths" : {
-      "@lib/*" : ["./lib/*"]
-    }
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
   },
-  "include": ["lib"],
+  "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

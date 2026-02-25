@@ -7,10 +7,45 @@
 }
 
 body {
-  font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, serif;
+  font-family: system-ui, sans-serif; 
   font-weight: normal;
 }
 
+.content {
+  margin: 0 auto;
+  max-width: 640px;
+}
+
+.input-markdown, .input-bibtex {
+  display: block;
+  width: 100%;
+  min-height: 16em;
+}
+
+.result {
+  margin: 32px 0;
+  padding: 16px;
+  font-size: 1.1em;
+  
+  border: 1px solid rgb(255, 153, 95);
+  box-shadow: 4px 4px 0px rgb(255, 196, 161);
+  background-color: rgb(255, 238, 231);
+
+  font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, serif;
+}
+
+.result {
+  color: rgb(132, 49, 0);
+  line-height: 1.4em;
+}
+
+.result h1, .result h2, .result h3 {
+  color: rgb(168, 62, 0)
+}
+
+
+.katex { line-height: 1.0 !important; }
+/* 
 .demo {
   display: grid;
   grid-template-columns: 50% 50%;
@@ -53,29 +88,4 @@ body {
 
   overflow-y: scroll;
   overflow-x: hidden;
-}
-
-/* ------------------------------------------------------ */
-
-.result-html .bib-title {
-  font-weight: bold;
-  font-size: 1.2em;
-}
-
-.result-html .bib-entry {
-  margin: 1.0em 0;
-}
-
-.result-html .bib-entry {
-  display: flex;
-  flex-direction: row;
-}
-
-.result-html .bib-entry .bib-id {
-  flex: 0;
-  flex-basis: 2.5em;
-}
-
-.result-html .bib-entry .cite-bib {
-  flex: 1;
-}
+} */

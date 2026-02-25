@@ -1,0 +1,19 @@
+.rehype-cite-bib .bib-title {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.rehype-cite-bib .bib-entry {
+  margin: 1.0em 0;
+  display: flex;
+  flex-direction: row;
+}
+
+.rehype-cite-bib .bib-entry .bib-id {
+  flex: 0;
+  flex-basis: 2.5em;
+}
+
+.rehype-cite-bib .bib-entry .cite-bib {
+  flex: 1;
+}

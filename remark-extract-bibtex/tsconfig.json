@@ -3,8 +3,11 @@
   "compilerOptions": {
     "paths" : {
       "@lib/*" : ["./lib/*"]
-    }
+    },
+    "typeRoots": [
+      "./node_modules/@types",
+      "./types"
+    ]
   },
-  "include": ["lib"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["lib", "test", "types"],
 }
